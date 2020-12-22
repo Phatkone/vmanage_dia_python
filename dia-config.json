@@ -1,10 +1,16 @@
 {
-    "api_key": "",
-    "user": "admin", 
-    "password": "password", 
-    "firewall": "192.168.100.221", 
+    "ftd_api_key": "",
+    "ftd_user": "admin", 
+    "ftd_password": "password", 
+    "ftd_address": "192.168.100.221", 
+    "vmanage_user": "admin",
+    "vmanage_password": "admin",
+    "vmanage_address":"10.96.19.140",
+    "retries":5,
+    "timeout":300,
     "source_url": "https://endpoints.office.com/endpoints/worldwide", 
     "user_defined_entries": [
-        
+        "cisco.com",
+        "software.cisco.com"
     ]
 }

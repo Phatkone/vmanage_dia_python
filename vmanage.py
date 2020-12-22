@@ -48,8 +48,6 @@ if type(ipv4) == bool:
 for ip in ipv4:
     data["entries"].append({"ipPrefix":ip})
 
-#data["entries"] = [{"ipPrefix":"10.1.1.1/32"}]
-
 r = s.put("{}/dataservice/template/policy/list/dataprefix/{}".format(url, listId), headers=headers, verify=False, data=json.dumps(data))
 #print(json.dumps(r.json(), indent=4))
 if "error" in r.json().keys():
@@ -77,7 +75,7 @@ elif len(polId) > 1:
         else:
             print(r.status_code, r.text)
 
-#print(json.dumps(js['data'],indent=4))
 
-#print(json.dumps(r.json(),indent=4))
-#print(polId)"""
+if __name__ == "__main__":
+    config = json.load("dia-config.json")
+    main()
