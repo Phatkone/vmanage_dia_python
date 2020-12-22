@@ -1,1 +1,10 @@
-{"api_key": "", "user": "admin", "password": "password", "firewall": "192.168.100.221", "source_url": "https://endpoints.office.com/endpoints/worldwide", "user_defined_entries": []}
+{
+    "api_key": "",
+    "user": "admin", 
+    "password": "password", 
+    "firewall": "192.168.100.221", 
+    "source_url": "https://endpoints.office.com/endpoints/worldwide", 
+    "user_defined_entries": [
+        
+    ]
+}

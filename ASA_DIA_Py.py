@@ -110,15 +110,13 @@ def main(**kwargs):
                 print(mkcfg)
         else:
             print("here")
-    print(getAuthToken)
-    """
+    #print(getAuthToken)
     urls = requests.get("{}?clientrequestid={}".format(c.srcUrl, uuid.uuid4()))
     if urls.status_code == 200:
-        print(urls.json())
+        print(json.dumps(urls.json(),indent=2))
     else:
         print(urls.status_code, urls.text)
     return
-    """
     r = requests.get("https://{}/api/access/global/rules".format(c.fwl), auth=(c.usr, c.pwd), verify=False, headers={"Accept":'application/json','Content-Type':'application/json'})
     print(r, r.text)
 
