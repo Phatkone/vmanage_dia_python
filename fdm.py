@@ -2,6 +2,8 @@ from config import Config
 import requests
 import json
 import O365
+#import time
+
 
 expectedResponses = {
     "get" : 200,
@@ -60,23 +62,38 @@ def main():
 
     flexObject = {
         "name": "testFlexConfigObject",
-        "description": "Test flex config object",
+        #"description": "Test flex config object",
         "lines": [
-            "webvpn",
-            "anyconnect-custom-attr dynamic-split-exclude-domains description exclude traffic for the following domains",
-            "anyconnect-custom-data dynamic-split-exclude-domains excludeddomains $urls"
+            #"webvpn",
+            "anyconnect-custom-attr dynamic-split-exclude-domains description 'exclude domains'",# traffic for the following domains $urls'",#{{urls.value}}",
+            #"anyconnect-custom-data dynamic-split-exclude-domains excludeddomains {urls}"
         ],
-        "isBlacklisted": "false",
+        "negateLines": [],
+        "isBlacklisted": True,
         "variables": [
             {
-            "name": "urls",
-            "variableType": "STRING",
-            "value": "test.com, test2.com",
-            "type": "flexvariable"
+                "name": "urls",
+                "variableType": "STRING",
+                "value": "test.com, test2.com",
+                "type": "flexvariable"
             }
         ],
         "type": "flexconfigobject"
     }
+
+    r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
+    js = r.json()
+    pol = ""
+    obj = ""
+    if "items" in js.keys():
+        pol = js["items"][0]["id"]
+        if len(js["items"][0]["flexConfigObjects"]) > 0:
+            obj = js["items"][0]["flexConfigObjects"][0]["id"]
+
+
+    r = requests.delete("https://{}:{}/api/fdm/latest/object/flexconfigpolicies/{}".format(config["ftd_address"],config["ftd_port"], pol), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexPolicy))
+    r = requests.delete("https://{}:{}/api/fdm/latest/object/flexconfigobjects/{}".format(config["ftd_address"],config["ftd_port"], obj), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexObject))
+    
     r = requests.post("https://{}:{}/api/fdm/latest/object/flexconfigobjects".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexObject))
     print(r.text)
     r = requests.post("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexPolicy))
@@ -86,6 +103,7 @@ def main():
     r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
     print(r.text)
 
+    #time.sleep(10)
     dep = deployConfig(config["ftd_address"], config["ftd_port"],headers,config["ssl_verify"])
     if dep.status_code == 200:
         print(dep.json())
