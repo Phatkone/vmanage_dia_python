@@ -1,2 +1,1 @@
-import ftd_functions
-
+print("Suckerrr")
