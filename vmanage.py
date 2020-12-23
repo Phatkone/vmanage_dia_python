@@ -1,14 +1,8 @@
 import requests
 import json
 import O365
-
-url = "https://10.96.19.140"
-uid = "admin"
-pwd = "admin"
-listName = "O365_DIA"
-
-
-
+import time
+from config import Config
 
 def getSession(url, uid, pwd, verify=True):  
     s = requests.session()
@@ -20,8 +14,8 @@ def getSession(url, uid, pwd, verify=True):
         exit("vManage login failed")
     return s, t
 
-def getDataPrefixList(s, url, verify=True):
-    r = s.get("https://{}/dataservice/template/policy/list/dataprefix".format(url), verify=verify)
+def getDataPrefixList(s, url, port, listName, verify=True):
+    r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix".format(url, port), verify=verify)
     js = r.json()
     listId = ""
     values = []
@@ -31,52 +25,63 @@ def getDataPrefixList(s, url, verify=True):
             listId = entry["listId"]
     return listId
 
-def updateDataPrefixList(s, url, verify, ipv4, ipv6, retries, wait)
+def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, ipv6, retries, timeout):
     data = {
         "name" :listName,
         "entries": [
         ]
     }
     
-
     for ip in ipv4:
         data["entries"].append({"ipPrefix":ip})
+    success = False
+    attempts = 1
 
-    r = s.put("{}/dataservice/template/policy/list/dataprefix/{}".format(url, listId), headers=headers, verify=verify, data=json.dumps(data))
+    while success == False and attempts <= retries:
+        r = s.put("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, listId), headers=headers, verify=verify, data=json.dumps(data))
+        if "error" in r.json().keys():
+            print("\nError:\n ", r.json()["error"]["message"], "\n ", r.json()["error"]["details"], "\n")
+            if attempts == retries:
+                print("Exceeded attempts {} of {}".format(attempts, retries))
+                exit(-1)
+            else:
+                print("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries))
+            attempts += 1
+            time.sleep(timeout)
+        else:
+            success = True
+            continue
 
-    if "error" in r.json().keys():
-        print("\nError:\n ", r.json()["error"]["message"], "\n ", r.json()["error"]["details"], "\n")
-        exit()
-
-    r = s.get("{}/dataservice/template/policy/list/dataprefix/{}".format(url, listId), headers=headers, verify=verify)
-    #print(json.dumps(r.json(), indent=4))
+    r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, listId), headers=headers, verify=verify)
     js = r.json()
     polId = js["activatedId"]
     return polId
 
-def activatePolicies(s, url, verify, polId, retries, wait)
-    if len(polId) == 1:
-        polId = polId[0]
-        r = s.post("{}/dataservice/template/policy/vsmart/activate/{}".format(url, polId), headers=headers, data="{}",verify=verify)
+def activatePolicies(s, url, port, verify, headers, polId, retries, timeout):
+    attempts = 1
+    success = False
+    while success == False and attempts <= retries:
+        r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, polId), headers=headers, data="{}",verify=verify)
         if r.status_code == 200:
             print("VSmart Activate Triggered")
+            success = True
         else:
             print(r.status_code, r.text)
-    elif len(polId) > 1:
-        for id in polId:
-            r = s.post("{}/dataservice/template/policy/vsmart/activate/{}".format(url, polId), headers=headers, data="{}",verify=verify)
-            if r.status_code == 200:
-                print("VSmart Activate Triggered")
+            if attempts == retries:
+                print("Exceeded attempts {} of {}".format(attempts, retries))
+                exit(-1)
             else:
-                print(r.status_code, r.text)
+                print("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries))
+            attempts += 1
+            time.sleep(timeout)
 
 def main():
     headers = {
         "Content-Type":"application/json",
         "Accept":"application/json"
     }
-    s, headers['X-XSRF-TOKEN'] = getSession(config["vmanage_address"], config["vmanage_user"], config["vmanage_password"])
-    dataPrefixList = getDataPrefixList(s, config["vmanage_address"], config["ssl_verify"])
+    s, headers['X-XSRF-TOKEN'] = getSession(config["vmanage_address"], config["vmanage_user"], config["vmanage_password"], config["ssl_verify"])
+    dataPrefixList = getDataPrefixList(s, config["vmanage_address"], config["vmanage_port"], config["vmanage_data_prefix_list"], config["ssl_verify"])
     if dataPrefixList == "":
         print("")
         return
@@ -84,14 +89,20 @@ def main():
     ipv4, ipv6 = O365.getIps()
     if type(ipv4) == bool:
         print(ipv6)
-        exit()
-    poldId = updateDataPrefixList(s, config["vmanage_address"], config["verify"], ipv4, ipv6, config["retries"], config["timeout"])
+        exit(-1)
+    polId = updateDataPrefixList(s, config["vmanage_address"], config["vmanage_port"], dataPrefixList, config["vmanage_data_prefix_list"], config["ssl_verify"], headers, ipv4, ipv6, config["retries"], config["timeout"])
     if len(polId) < 1:
         exit("Referenced Policies not found")
+    for id in polId:
+        activatePolicies(s,  config["vmanage_address"], config["vmanage_port"], config["ssl_verify"], headers, id, config["retries"], config["timeout"])
 
 
 if __name__ == "__main__":
-    config = json.load("dia-config.json")
+    c = Config()
+    if c.checkConfig() == False:
+        c.rebuildConfig()
+        exit("Check config and try again")
+    config = c.config
     if config["vmanage_address"][0:8] == "https://":
         config["vmanage_address"] = config["vmanage_address"].replace("https://","")
     if config["ssl_verify"] == False:

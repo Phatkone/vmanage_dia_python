@@ -1,19 +1,19 @@
 {
-    "ftd_api_key": "",
-    "ftd_user": "admin", 
-    "ftd_password": "password", 
-    "ftd_address": "192.168.100.221", 
-    "ftd_prefix_list":"DIA_Prefixes",
+    "ftd_user": "admin",
+    "ftd_password": "Cisco1234!",
+    "ftd_address": "10.96.7.205",
+    "ftd_prefix_list": "DIA_Prefixes",
+    "ftd_port":443,
     "vmanage_user": "admin",
     "vmanage_password": "admin",
-    "vmanage_address":"10.96.19.140",
-    "vmanage_data_prefix_list":"O365_DIA",
-    "retries":5,
-    "timeout":300,
-    "source_url": "https://endpoints.office.com/endpoints/worldwide", 
+    "vmanage_address": "10.96.19.140",
+    "vmanage_port":443,
+    "vmanage_data_prefix_list": "O365_DIA",
+    "retries": 5,
+    "timeout": 1,
     "user_defined_entries": [
         "cisco.com",
         "software.cisco.com"
     ],
-    "ssl_verify":false
+    "ssl_verify": false
 }
