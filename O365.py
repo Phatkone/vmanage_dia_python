@@ -4,8 +4,8 @@ import json
 import re
 
 url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".format(uuid.uuid4())
-regexv4 = "^(\d{1,2}\.|[0-1][0-9][0-9]\.|25[0-5]|2[0-4][0-9]\.){3}(\d{1,2}|[0-1][0-9][0-9]|25[0-5]|2[0-4][0-9])/\d{1,2}$"
-regexv6 = "^[0-9a-f:]+\/\d{1,3}$"
+regexv4 = "^(\d{1,2}\.|[0-1][0-9][0-9]\.|2[0-4][0-9]\.|25[0-5]\.){3}(\d{1,2}|[0-1][0-9][0-9]|2[0-4][0-9]|25[0-5])\/\d{1,2}$"
+regexv6 = "^[0-9a-f]{1,4}:[0-9a-f:]+\/\d{1,3}$p/i"
 
 def getIps(serviceArea = ''):
     r = requests.get(url)
@@ -33,7 +33,7 @@ def getIps(serviceArea = ''):
                                 ipv6.append(ip)
         return ipv4, ipv6
     else:
-        return false, r.text
+        return False, r.text
 
 def getUrls(serviceArea = ''):
     r = requests.get(url)
