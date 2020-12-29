@@ -3,6 +3,7 @@ import json
 import O365
 import time
 from config import Config
+from dig import dig
 
 def getSession(url, uid, pwd, verify=True):  
     s = requests.session()
@@ -25,7 +26,7 @@ def getDataPrefixList(s, url, port, listName, verify=True):
             listId = entry["listId"]
     return listId
 
-def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, ipv6, retries, timeout):
+def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, ipv6, retries, timeout, extras = []):
     data = {
         "name" :listName,
         "entries": [
@@ -34,6 +35,12 @@ def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, 
     
     for ip in ipv4:
         data["entries"].append({"ipPrefix":ip})
+    for entry in extras:
+        records = dig(entry)
+        for record in records:
+            data["entries"].append({"ipPrefix":"{}/32".format(ip)})
+    del record
+    del records
     success = False
     attempts = 1
 
@@ -80,8 +87,17 @@ def main():
         "Content-Type":"application/json",
         "Accept":"application/json"
     }
-    s, headers['X-XSRF-TOKEN'] = getSession(config["vmanage_address"], config["vmanage_user"], config["vmanage_password"], config["ssl_verify"])
-    dataPrefixList = getDataPrefixList(s, config["vmanage_address"], config["vmanage_port"], config["vmanage_data_prefix_list"], config["ssl_verify"])
+    s, headers['X-XSRF-TOKEN'] = getSession(config["vmanage_address"], 
+        config["vmanage_user"], 
+        config["vmanage_password"], 
+        config["ssl_verify"]
+    )
+    dataPrefixList = getDataPrefixList(s, 
+        config["vmanage_address"], 
+        config["vmanage_port"], 
+        config["vmanage_data_prefix_list"], 
+        config["ssl_verify"]
+    )
     if dataPrefixList == "":
         print("")
         return
@@ -90,11 +106,31 @@ def main():
     if type(ipv4) == bool:
         print(ipv6)
         exit(-1)
-    polId = updateDataPrefixList(s, config["vmanage_address"], config["vmanage_port"], dataPrefixList, config["vmanage_data_prefix_list"], config["ssl_verify"], headers, ipv4, ipv6, config["retries"], config["timeout"])
+    polId = updateDataPrefixList(s, 
+        config["vmanage_address"], 
+        config["vmanage_port"], 
+        dataPrefixList, 
+        config["vmanage_data_prefix_list"], 
+        config["ssl_verify"], 
+        headers, 
+        ipv4, 
+        ipv6, 
+        config["retries"], 
+        config["timeout"], 
+        config["user_defined_entries"]
+    )
     if len(polId) < 1:
         exit("Referenced Policies not found")
     for id in polId:
-        activatePolicies(s,  config["vmanage_address"], config["vmanage_port"], config["ssl_verify"], headers, id, config["retries"], config["timeout"])
+        activatePolicies(s, 
+            config["vmanage_address"], 
+            config["vmanage_port"], 
+            config["ssl_verify"], 
+            headers, 
+            id, 
+            config["retries"], 
+            config["timeout"]
+        )
 
 
 if __name__ == "__main__":
