@@ -2,6 +2,7 @@ import requests
 import json
 import O365
 import time
+import ipReg
 from config import Config
 from dig import dig
 
@@ -26,7 +27,7 @@ def getDataPrefixList(s, url, port, listName, verify=True):
             listId = entry["listId"]
     return listId
 
-def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, ipv6, retries, timeout, extras = []):
+def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, ipv6, retries, timeout, userDefinedEntries = []):
     data = {
         "name" :listName,
         "entries": [
@@ -35,12 +36,15 @@ def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, 
     
     for ip in ipv4:
         data["entries"].append({"ipPrefix":ip})
-    for entry in extras:
-        records = dig(entry)
-        for record in records:
-            data["entries"].append({"ipPrefix":"{}/32".format(ip)})
-    del record
-    del records
+    for entry in userDefinedEntries:
+        if ipReg.isIPv4(entry) == False and ipReg.isIPv6(entry) == False and ipReg.isFQDN(entry):
+            records = dig(entry)
+            for record in records:
+                data["entries"].append({"ipPrefix":"{}/32".format(ip)})
+            del record
+            del records
+        elif ipReg.isIPv4(entry):
+            data["entries"].append({"ipPrefix":"{}/32".format(entry)})
     success = False
     attempts = 1
 
@@ -70,7 +74,7 @@ def activatePolicies(s, url, port, verify, headers, polId, retries, timeout):
     while success == False and attempts <= retries:
         r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, polId), headers=headers, data="{}",verify=verify)
         if r.status_code == 200:
-            print("VSmart Activate Triggered")
+            print("vSmart Activate Triggered")
             success = True
         else:
             print(r.status_code, r.text)
