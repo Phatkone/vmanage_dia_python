@@ -4,7 +4,7 @@ import O365
 import time
 import ipReg
 from config import Config
-from dig import dig
+from dig import dig, getARecords
 
 def getSession(url, uid, pwd, verify=True):  
     s = requests.session()
@@ -38,12 +38,16 @@ def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, 
         data["entries"].append({"ipPrefix":ip})
     for entry in userDefinedEntries:
         if ipReg.isIPv4(entry) == False and ipReg.isIPv6(entry) == False and ipReg.isFQDN(entry):
-            records = dig(entry)
+            records = getARecords(entry)
             for record in records:
-                data["entries"].append({"ipPrefix":"{}/32".format(ip)})
+                if ipReg.isIPv4(record) and (record[-2] == "/" or record[-3] == "/"):
+                    data["entries"].append({"ipPrefix":"{}".format(record)})
+                else:
+                    data["entries"].append({"ipPrefix":"{}/32".format(record)})
             del record
             del records
         elif ipReg.isIPv4(entry):
+            print(entry)
             data["entries"].append({"ipPrefix":"{}/32".format(entry)})
     success = False
     attempts = 1

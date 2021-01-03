@@ -2,6 +2,7 @@ import dns.name
 import dns.message
 import dns.query
 import dns.flags
+from ipReg import isIPv4, isIPv6, isFQDN
 
 def dig(fqdn, nameserver = '8.8.8.8'):# Qtype="A", nameserver = '8.8.8.8'):
     domain = dns.name.from_text(fqdn)
@@ -26,3 +27,28 @@ def dig(fqdn, nameserver = '8.8.8.8'):# Qtype="A", nameserver = '8.8.8.8'):
     for a in response.answer[0].items:
         entries.append(str(a))
     return entries
+
+def getARecords(fqdn):
+    records = dig(fqdn)
+    ret = []
+    for record in records:
+        if isIPv4(record) == False and isIPv6(record) == False and isFQDN(record) == True:
+            r = getARecord(record)
+            if type(r) == list:
+                for v in r:
+                    ret.append(v)
+            else:
+                ret.append(r)
+        elif isIPv4(record):
+            ret.append(record)
+    return ret
+
+def getARecord(fqdn):
+    while isIPv4(fqdn) == False:
+        d = dig(fqdn)
+        if len(d) == 1:
+            fqdn = d[0]
+        elif len(d) > 1:
+            for r in d:
+                getARecord(r)
+    return fqdn

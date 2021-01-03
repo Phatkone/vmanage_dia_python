@@ -40,7 +40,7 @@ def main():
     tokenReq = getToken(config["ftd_address"], config["ftd_port"], config["ftd_user"], config["ftd_password"], config["ssl_verify"])
     if type(tokenReq) != bool:
         token = tokenReq["access_token"]
-        print("Token = {} \r\n".format(token))
+        #print("Token = {} \r\n".format(token))
     else:
         token = ""
     headers = {
@@ -62,11 +62,17 @@ def main():
 
     flexObject = {
         "name": "testFlexConfigObject",
-        #"description": "Test flex config object",
+        "description": "Test flex config object",
         "lines": [
             #"webvpn",
-            "anyconnect-custom-attr dynamic-split-exclude-domains description 'exclude domains'",# traffic for the following domains $urls'",#{{urls.value}}",
-            #"anyconnect-custom-data dynamic-split-exclude-domains excludeddomains {urls}"
+            "webvpn",
+            "anyconnect-custom-attr dynamic-split-exclude-domains description traffic for these domains will not be sent to the VPN headend",
+            "anyconnect-custom-data dynamic-split-exclude-domains excludeddomains {{urls}}",
+            #"ravpn",
+            #"anyconnect-custom-attr dynamic-split-exclude-domains description 'exclude traffic for the following domains {{urls}}'",#{{urls.value}}",
+            #"anyconnect-custom-data dynamic-split-exclude-domains excludeddomains {{urls}}"
+            "group-policy DfltGrpPolicy attributes",
+            "anyconnect-custom dynamic-split-exclude-domains value excludeddomains"
         ],
         "negateLines": [],
         "isBlacklisted": True,
@@ -74,7 +80,7 @@ def main():
             {
                 "name": "urls",
                 "variableType": "STRING",
-                "value": "test.com, test2.com",
+                "value": "test.com,test2.com",
                 "type": "flexvariable"
             }
         ],
@@ -85,7 +91,7 @@ def main():
     js = r.json()
     pol = ""
     obj = ""
-    if "items" in js.keys():
+    if "items" in js.keys() and len(js["items"]) > 0:
         pol = js["items"][0]["id"]
         if len(js["items"][0]["flexConfigObjects"]) > 0:
             obj = js["items"][0]["flexConfigObjects"][0]["id"]
@@ -96,12 +102,36 @@ def main():
     
     r = requests.post("https://{}:{}/api/fdm/latest/object/flexconfigobjects".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexObject))
     print(r.text)
+    js = r.json()
+    if "error" in js.keys():
+        msgs = js["error"]["messages"] 
+        for msg in msgs:
+            print("Error: {} - {}".format(msg["code"], msg["description"]))
+        return
     r = requests.post("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexPolicy))
     print(r.text)
+    js = r.json()
+    if "error" in js.keys():
+        msgs = js["error"]["messages"] 
+        for msg in msgs:
+            print("Error: {} - {}".format(msg["code"], msg["description"]))
+        return
     r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigobjects".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
     print(r.text)
+    js = r.json()
+    if "error" in js.keys():
+        msgs = js["error"]["messages"] 
+        for msg in msgs:
+            print("Error: {} - {}".format(msg["code"], msg["description"]))
+        return
     r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
     print(r.text)
+    js = r.json()
+    if "error" in js.keys():
+        msgs = js["error"]["messages"] 
+        for msg in msgs:
+            print("Error: {} - {}".format(msg["code"], msg["description"]))
+        return
 
     #time.sleep(10)
     dep = deployConfig(config["ftd_address"], config["ftd_port"],headers,config["ssl_verify"])
