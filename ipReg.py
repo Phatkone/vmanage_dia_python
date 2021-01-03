@@ -3,6 +3,7 @@ import re
 regexv4 = "^(\d{1,2}\.|[0-1][0-9][0-9]\.|2[0-4][0-9]\.|25[0-5]\.){3}(\d{1,2}|[0-1][0-9][0-9]|2[0-4][0-9]|25[0-5])(\/\d{1,2})?$"
 regexv6 = "^[0-9a-f]{1,4}:[0-9a-f:]+(\/\d{1,3})?$"
 regexfqdn = "^[A-Za-z0-9\-\.]+$"
+regexwcfqdn = "^[A-Za-z0-9\-\.\*]+$"
 
 def isIPv4(inAddr):
     if re.match(regexv4, inAddr):
@@ -19,7 +20,13 @@ def isIPv6(inAddr):
 
 
 def isFQDN(inAddr):
-    if re.match(regexfqdn, inAddr):
+    if re.match(regexfqdn, inAddr) and isIPv6(inAddr) == False and isIPv4(inAddr) == False:
+        return True
+    else:
+        return False
+
+def isFQDNWildcard(inAddr):
+    if re.match(regexwcfqdn, inAddr) and isIPv6(inAddr) == False and isIPv4(inAddr) == False and isFQDN(inAddr) == False:
         return True
     else:
         return False
