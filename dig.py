@@ -36,7 +36,8 @@ def getARecords(fqdn):
             r = getARecord(record)
             if type(r) == list:
                 for v in r:
-                    ret.append(v)
+                    if len(v) > 1:
+                        ret.append(v)
             else:
                 ret.append(r)
         elif isIPv4(record):
@@ -51,4 +52,6 @@ def getARecord(fqdn):
         elif len(d) > 1:
             for r in d:
                 getARecord(r)
+        elif len(d) == 0:
+            return 
     return fqdn

@@ -12,8 +12,12 @@
     "retries": 5,
     "timeout": 1,
     "user_defined_entries": [
-        "cisco.com",
-        "software.cisco.com"
+        "office.com",
+        "office365.com",
+        "sharepoint.com",
+        "lync.com",
+        "teams.microsoft.com",
+        "onmicrosoft.com"
     ],
     "ssl_verify": false
 }
