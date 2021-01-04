@@ -6,7 +6,7 @@ import json
 from config import Config
 
 def getAuthToken(c):
-    r = requests.post("https://{}/api/tokenservices".format(c['h']), data='', auth=(c['u'], c['p']), verify=False, headers={'content-type':"application/json"})
+    r = requests.post("https://{}/api/tokenservices".format(c['ftd_address']), data='', auth=(c['ftd_user'], c['ftd_password']), verify=False, headers={'content-type':"application/json"})
     if "X-Auth-Token" in r.headers.keys():
         return r.headers['X-Auth-Token']
     else:
@@ -19,9 +19,25 @@ def main(**kwargs):
         c.rebuildConfig()
         exit("Check config and try again")
     config = c.config
-    config["u"] = 'admin'
-    config["p"] = 'secret'
-    config["h"] = '192.168.100.221'
+    if config["ssl_verify"] == False:
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    
+    config["ftd_user"] = 'admin'
+    config["ftd_password"] = 'secret'
+    config["ftd_address"] = '192.168.100.221'
+
+    key = getAuthToken(config)
+    if key == False:
+        print("Unable to retrieve auth token.")
+        return
+    
+    headers= {
+        'content-type':"application/json",
+        'accept':'application/json',
+        'X-Auth-Token':key
+    }
+
     """
     #this section not used unless we want the full list... which wont work due to size limitations in ASA
     urls = o365.getUrls()
@@ -47,26 +63,18 @@ def main(**kwargs):
     for url in config["user_defined_entries"]:
         if ipReg.isFQDN(url):
             urls.append(url)
-    key = getAuthToken(config)
-    if key == False:
-        print("Unable to retrieve auth token.")
-        return
-    
-    headers= {
-        'content-type':"application/json",
-        'accept':'application/json',
-        'X-Auth-Token':key
-    }
 
     data = {
         "commands": [
-            "no anyconnect-custom-data dynamic-split-exclude-domains Domains",
-            "anyconnect-custom-data dynamic-split-exclude-domains Domains {}".format(",".join(urls)),
+            "no anyconnect-custom-data dynamic-split-exclude-domains {}".format(config["ftd_prefix_list"]),
+            "anyconnect-custom-data dynamic-split-exclude-domains {} {}".format(config["ftd_prefix_list"],",".join(urls)),
             "show running-config | include anyconnect-custom-data dynamic-split-exclude-domains"
             ]
         }
-    r = requests.post("https://{}/api/cli".format(config['h']), verify=False, headers=headers, data=json.dumps(data))
+    r = requests.post("https://{}/api/cli".format(config['ftd_address']), verify=False, headers=headers, data=json.dumps(data))
     print(json.dumps(r.json()["response"], indent=2))
+
+    requests.post("https://{}/commands/writemem".format(config['ftd_address']), verify=False, headers=headers)
 
 if __name__ == '__main__':
     main(**dict(arg.split("=",1) for arg in sys.argv[1:]))
