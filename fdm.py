@@ -1,7 +1,7 @@
 from config import Config
 import requests
 import json
-import O365
+import o365
 #import time
 
 def success(r):

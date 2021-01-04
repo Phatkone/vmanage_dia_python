@@ -1,6 +1,6 @@
 import requests
 import json
-import O365
+import o365
 import time
 import ipReg
 from config import Config

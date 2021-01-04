@@ -1,6 +1,6 @@
 import requests
 import sys
-import O365
+#import o365
 import ipReg
 import json
 from config import Config
