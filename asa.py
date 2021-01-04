@@ -6,7 +6,7 @@ import json
 from config import Config
 
 def getAuthToken(c):
-    r = requests.post("https://{}/api/tokenservices".format(c['ftd_address']), data='', auth=(c['ftd_user'], c['ftd_password']), verify=False, headers={'content-type':"application/json"})
+    r = requests.post("https://{}/api/tokenservices".format(c['ftd_address']), data='', auth=(c['ftd_user'], c['ftd_password']), verify=c['ssl_verify'], headers={'content-type':"application/json"})
     if "X-Auth-Token" in r.headers.keys():
         return r.headers['X-Auth-Token']
     else:
@@ -71,10 +71,10 @@ def main(**kwargs):
             "show running-config | include anyconnect-custom-data dynamic-split-exclude-domains"
             ]
         }
-    r = requests.post("https://{}/api/cli".format(config['ftd_address']), verify=False, headers=headers, data=json.dumps(data))
+    r = requests.post("https://{}/api/cli".format(config['ftd_address']), verify=config['ssl_verify'], headers=headers, data=json.dumps(data))
     print(json.dumps(r.json()["response"], indent=2))
 
-    requests.post("https://{}/commands/writemem".format(config['ftd_address']), verify=False, headers=headers)
+    requests.post("https://{}/commands/writemem".format(config['ftd_address']), verify=config['ssl_verify'], headers=headers)
 
 if __name__ == '__main__':
     main(**dict(arg.split("=",1) for arg in sys.argv[1:]))
