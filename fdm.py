@@ -2,6 +2,7 @@ from config import Config
 import requests
 import json
 import o365
+import ipReg
 #import time
 
 def success(r):
@@ -55,7 +56,10 @@ def main():
         "Accept":"application/json",
         "Content-Type":"application/json"
     }
-
+    urls = []
+    for url in config["user_defined_entries"]:
+        if ipReg.isFQDN(url):
+            urls.append(url)
     flexPolicy = {
         "flexConfigObjects":[
             {
@@ -73,7 +77,7 @@ def main():
         "lines": [
             #"webvpn",
             "anyconnect-custom-attr dynamic-split-exclude-domains description traffic for these domains will not be sent to the VPN headend",
-            #"anyconnect-custom-data dynamic-split-exclude-domains excludeddomains {{urls}}"
+            #"anyconnect-custom-data dynamic-split-exclude-domains {} {{{{urls}}}}".format(config["ftd_prefix_list"])
             #"group-policy DfltGrpPolicy attributes",
             #"anyconnect-custom dynamic-split-exclude-domains value excludeddomains"
         ],
@@ -83,7 +87,7 @@ def main():
             {
                 "name": "urls",
                 "variableType": "STRING",
-                "value": "test.com,test2.com",
+                "value": ",".join(urls),
                 "type": "flexvariable"
             }
         ],

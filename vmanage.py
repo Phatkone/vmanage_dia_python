@@ -39,12 +39,12 @@ def updateDataPrefixList(s, url, port, listId, listName, verify, headers, ipv4, 
     for entry in userDefinedEntries:
         if ipReg.isFQDN(entry):
             records = getARecords(entry)
+            print(entry, records)
             for record in records:
                 if ipReg.isIPv4(record) and (record[-2] == "/" or record[-3] == "/"):
                     data["entries"].append({"ipPrefix":"{}".format(record)})
                 elif ipReg.isIPv4(record):
                     data["entries"].append({"ipPrefix":"{}/32".format(record)})
-            del record
             del records
         elif ipReg.isIPv4(entry):
             print(entry)
@@ -110,7 +110,7 @@ def main():
         print("")
         return
     
-    ipv4, ipv6 = O365.getIps()
+    ipv4, ipv6 = o365.getIps()
     if type(ipv4) == bool:
         #if ipv4 is type bool then getIps returned false, ipv6 is the error message
         print(ipv6)

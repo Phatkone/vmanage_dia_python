@@ -24,7 +24,7 @@ def main(**kwargs):
     config["h"] = '192.168.100.221'
     """
     #this section not used unless we want the full list... which wont work due to size limitations in ASA
-    urls = O365.getUrls()
+    urls = o365.getUrls()
     if type(urls) == str:
         print(urls)
         exit(-1)
