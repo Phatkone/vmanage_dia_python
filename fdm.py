@@ -4,13 +4,20 @@ import json
 import O365
 #import time
 
+def success(r):
+    expectedResponses = {
+        "GET" : 200,
+        "POST" : 200,
+        "PUT" : 200,
+        "DELETE" : 204
+    }
+    method = r.request.method
+    if method.upper() in expectedResponses.keys():
+        if expectedResponses[method] == r.status_code:
+            return True
+    
+    return False
 
-expectedResponses = {
-    "get" : 200,
-    "post" : 200,
-    "put" : 200,
-    "delete" : 204
-}
 
 def getToken(url, port, usr, pwd, verify=True):
     data = {
@@ -24,7 +31,7 @@ def getToken(url, port, usr, pwd, verify=True):
         "Accept":"application/json"
     }
     r = requests.post("https://{}:{}/api/fdm/latest/fdm/token".format(url, port),data=js,headers=headers,verify=False)
-    if r.status_code == 200:
+    if success(r):
         return r.json()
     else:
         print(r.status_code, r.text)
@@ -65,14 +72,10 @@ def main():
         "description": "Test flex config object",
         "lines": [
             #"webvpn",
-            "webvpn",
             "anyconnect-custom-attr dynamic-split-exclude-domains description traffic for these domains will not be sent to the VPN headend",
-            "anyconnect-custom-data dynamic-split-exclude-domains excludeddomains {{urls}}",
-            #"ravpn",
-            #"anyconnect-custom-attr dynamic-split-exclude-domains description 'exclude traffic for the following domains {{urls}}'",#{{urls.value}}",
             #"anyconnect-custom-data dynamic-split-exclude-domains excludeddomains {{urls}}"
-            "group-policy DfltGrpPolicy attributes",
-            "anyconnect-custom dynamic-split-exclude-domains value excludeddomains"
+            #"group-policy DfltGrpPolicy attributes",
+            #"anyconnect-custom dynamic-split-exclude-domains value excludeddomains"
         ],
         "negateLines": [],
         "isBlacklisted": True,
@@ -88,55 +91,89 @@ def main():
     }
 
     r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
-    js = r.json()
-    pol = ""
-    obj = ""
-    if "items" in js.keys() and len(js["items"]) > 0:
-        pol = js["items"][0]["id"]
-        if len(js["items"][0]["flexConfigObjects"]) > 0:
-            obj = js["items"][0]["flexConfigObjects"][0]["id"]
-
-
-    r = requests.delete("https://{}:{}/api/fdm/latest/object/flexconfigpolicies/{}".format(config["ftd_address"],config["ftd_port"], pol), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexPolicy))
-    r = requests.delete("https://{}:{}/api/fdm/latest/object/flexconfigobjects/{}".format(config["ftd_address"],config["ftd_port"], obj), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexObject))
+    if success(r):
+        js = r.json()
+        pol = ""
+        obj = ""
+        if "items" in js.keys() and len(js["items"]) > 0:
+            pol = js["items"][0]["id"]
+            r = requests.delete("https://{}:{}/api/fdm/latest/object/flexconfigpolicies/{}".format(config["ftd_address"],config["ftd_port"], pol), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexPolicy))
+            if success(r):
+                print("Successfully deleted Flex Config Policy {}".format(pol))
+            else:
+                print(r.text)
+            if len(js["items"][0]["flexConfigObjects"]) > 0:
+                obj = js["items"][0]["flexConfigObjects"][0]["id"]
+                r = requests.delete("https://{}:{}/api/fdm/latest/object/flexconfigobjects/{}".format(config["ftd_address"],config["ftd_port"], obj), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexObject))                
+                if success(r):
+                    print("Successfully deleted Flex Config Object {}".format(obj))
+                else:
+                    print(r.text)
+                    
     
     r = requests.post("https://{}:{}/api/fdm/latest/object/flexconfigobjects".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexObject))
-    print(r.text)
-    js = r.json()
-    if "error" in js.keys():
-        msgs = js["error"]["messages"] 
-        for msg in msgs:
-            print("Error: {} - {}".format(msg["code"], msg["description"]))
+    if success(r) == False:
+        js = r.json()
+        if "error" in js.keys():
+            print("Error with Flex Object creation, Type: {}".format(js['error']['key']))
+            msgs = js["error"]["messages"] 
+            for msg in msgs:
+                print("{} - {}".format(msg["code"], msg["description"]))
+        else:
+            print("An unknown error occurred during Flex Object creation", r.text)
         return
+    
     r = requests.post("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers, data=json.dumps(flexPolicy))
-    print(r.text)
-    js = r.json()
-    if "error" in js.keys():
-        msgs = js["error"]["messages"] 
-        for msg in msgs:
-            print("Error: {} - {}".format(msg["code"], msg["description"]))
-        return
-    r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigobjects".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
-    print(r.text)
-    js = r.json()
-    if "error" in js.keys():
-        msgs = js["error"]["messages"] 
-        for msg in msgs:
-            print("Error: {} - {}".format(msg["code"], msg["description"]))
-        return
-    r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
-    print(r.text)
-    js = r.json()
-    if "error" in js.keys():
-        msgs = js["error"]["messages"] 
-        for msg in msgs:
-            print("Error: {} - {}".format(msg["code"], msg["description"]))
+    if success(r) == False:
+        js = r.json()
+        if "error" in js.keys():
+            print("Error with Flex Policy creation, Type: {}".format(js['error']['key']))
+            msgs = js["error"]["messages"] 
+            for msg in msgs:
+                print("{} - {}".format(msg["code"], msg["description"]))
+        else:
+            print("An unknown error occurred during Flex Policy creation", r.text)
         return
 
+    r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigobjects".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
+    if success(r) == False:
+        js = r.json()
+        if "error" in js.keys():
+            print("Error with Flex Object retrieval, Type: {}".format(js['error']['key']))
+            msgs = js["error"]["messages"] 
+            for msg in msgs:
+                print("{} - {}".format(msg["code"], msg["description"]))
+        else:
+            print("An unknown error occurred during Flex Object retrieval", r.text)
+        return
+    
+    r = requests.get("https://{}:{}/api/fdm/latest/object/flexconfigpolicies".format(config["ftd_address"],config["ftd_port"]), verify=config["ssl_verify"], headers=headers)
+    if success(r) == False:
+        js = r.json()
+        if "error" in js.keys():
+            print("Error with Flex Policy retrieval, Type: {}".format(js['error']['key']))
+            msgs = js["error"]["messages"] 
+            for msg in msgs:
+                print("{} - {}".format(msg["code"], msg["description"]))
+        else:
+            print("An unknown error occurred during Flex Policy retrieval", r.text)
+        return
+    
     #time.sleep(10)
     dep = deployConfig(config["ftd_address"], config["ftd_port"],headers,config["ssl_verify"])
-    if dep.status_code == 200:
-        print(dep.json())
+    if success(dep) == False:
+        js = dep.json()
+        if "error" in js.keys():
+            print("Error with config deployment, Type: {}".format(js['error']['key']))
+            msgs = js["error"]["messages"] 
+            for msg in msgs:
+                print("{} - {}".format(msg["code"], msg["description"]))
+        else:
+            print("An unknown error occurred during config deployment", r.text)
+        return
+    else:
+        print(dep.text)
+    
 
 
 if __name__ == "__main__":
