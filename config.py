@@ -10,14 +10,15 @@ class Config:
         "ftd_address": '',
         "ftd_port": 443,
         "ftd_prefix_list": '',
+        "ftd_user_defined_entries": [],
         "vmanage_user": '',
         "vmanage_password": '',
         "vmanage_address": '',
         "vmanage_port": 443,
         "vmanage_data_prefix_list": '',
+        "vmanage_user_defined_entries": [],
         "retries": 5,
         "timeout": 300,
-        "user_defined_entries": [],
         "ssl_verify": True
     }
 

@@ -57,7 +57,7 @@ def main():
         "Content-Type":"application/json"
     }
     urls = []
-    for url in config["user_defined_entries"]:
+    for url in config["ftd_user_defined_entries"]:
         if ipReg.isFQDN(url):
             urls.append(url)
     flexPolicy = {

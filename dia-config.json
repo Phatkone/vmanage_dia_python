@@ -4,14 +4,7 @@
     "ftd_address": "10.96.7.205",
     "ftd_prefix_list": "DIA_Prefixes",
     "ftd_port":443,
-    "vmanage_user": "admin",
-    "vmanage_password": "admin",
-    "vmanage_address": "10.96.19.140",
-    "vmanage_port":443,
-    "vmanage_data_prefix_list": "O365_DIA",
-    "retries": 5,
-    "timeout": 1,
-    "user_defined_entries": [
+    "ftd_user_defined_entries": [
         "office.com",
         "office365.com",
         "sharepoint.com",
@@ -19,5 +12,17 @@
         "teams.microsoft.com",
         "onmicrosoft.com"
     ],
+    "vmanage_user": "admin",
+    "vmanage_password": "admin",
+    "vmanage_address": "10.96.19.140",
+    "vmanage_port":443,
+    "vmanage_data_prefix_list": "O365_DIA",
+    "vmanage_user_defined_entries": [
+        "cisco.com",
+        "8.8.8.8",
+        "1.1.1.1/32"
+    ],
+    "retries": 5,
+    "timeout": 1,
     "ssl_verify": false
 }

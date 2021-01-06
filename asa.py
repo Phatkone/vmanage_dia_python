@@ -48,7 +48,7 @@ def main(**kwargs):
     for url in urls:
         if ipReg.isFQDN(url):
             fqdns.append(url)
-    for url in config["user_defined_entries"]:
+    for url in config["ftd_user_defined_entries"]:
         if ipReg.isFQDN(url):
             print(url)
             for u in fqdns:
@@ -60,7 +60,7 @@ def main(**kwargs):
     del urls
     """
     urls = []
-    for url in config["user_defined_entries"]:
+    for url in config["ftd_user_defined_entries"]:
         if ipReg.isFQDN(url):
             urls.append(url)
 

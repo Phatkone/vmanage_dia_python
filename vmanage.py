@@ -126,7 +126,7 @@ def main():
         ipv6, 
         config["retries"], 
         config["timeout"], 
-        config["user_defined_entries"]
+        config["vmanage_user_defined_entries"]
     )
     if len(polId) < 1:
         exit("Referenced Policies not found")
