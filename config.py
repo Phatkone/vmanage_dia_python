@@ -30,7 +30,7 @@ class Config:
             print(e)
     
     def checkConfig(self):
-        for k,v in self.defaults.items():
+        for k in self.defaults.keys():
             if k not in self.config.keys():
                 print("Missing '{}' key from config file".format(k))
                 return False
@@ -41,7 +41,7 @@ class Config:
     
     def rebuildConfig(self):
         newvals = {}
-        for k,v in self.defaults.items():
+        for k in self.defaults.keys():
             if k in self.config.keys():
                 newvals[k] = self.config[k]
             else:

@@ -20,7 +20,6 @@ def getDataPrefixList(s, url, port, listName, verify=True):
     r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix".format(url, port), verify=verify)
     js = r.json()
     listId = ""
-    values = []
     entries = js['data']
     for entry in entries:
         if entry['name'] == listName:
