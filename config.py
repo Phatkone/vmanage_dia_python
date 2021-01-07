@@ -19,7 +19,8 @@ class Config:
         "vmanage_user_defined_entries": [],
         "retries": 5,
         "timeout": 300,
-        "ssl_verify": True
+        "ssl_verify": True,
+        "sharepoint_tenant":""
     }
 
     def __init__(self):

@@ -5,7 +5,9 @@ from ipReg import isIPv4, isIPv6
 
 url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".format(uuid.uuid4())
 
-def getIps(serviceArea = ''):
+def getIps(optimized = False, tenant = '', serviceArea = ''):
+    if tenant != '':
+        url = "{}&TenantName={}".format(url,tenant)
     r = requests.get(url)
     ipv4 = []
     ipv6 = []
@@ -13,6 +15,8 @@ def getIps(serviceArea = ''):
         js = r.json()
         for entry in js:
             if "ips" in entry.keys():
+                if optimized and ('category' in entry.keys() and entry['category'] != 'Optimized'):
+                    continue
                 if serviceArea != "" and entry['serviceArea'].lower() == serviceArea.lower():
                     for ip in entry["ips"]:
                         if isIPv4(ip):
@@ -33,13 +37,17 @@ def getIps(serviceArea = ''):
     else:
         return False, r.text
 
-def getUrls(serviceArea = ''):
+def getUrls(optimized = False, tenant = '', serviceArea = ''):
+    if tenant != '':
+        url = "{}&TenantName={}".format(url,tenant)
     r = requests.get(url)
     urls = []
     if r.status_code == 200:
         js = r.json()
         for entry in js:
             if "urls" in entry.keys():
+                if optimized and ('category' in entry.keys() and entry['category'] != 'Optimized'):
+                    continue
                 if serviceArea != "" and entry['serviceArea'].lower() == serviceArea.lower():
                     for ur in entry["urls"]:
                         if ur not in urls:

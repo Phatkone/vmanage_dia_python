@@ -24,5 +24,6 @@
     ],
     "retries": 5,
     "timeout": 1,
-    "ssl_verify": false
+    "ssl_verify": false,
+    "sharepoint_tenant":""
 }
