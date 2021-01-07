@@ -89,5 +89,3 @@ def mask2range(subnet):
         return "Invalid Subnet '{}'".format(subnet)
     inverse = abs(cidr-32)
     return pow(2,inverse)-1
-
-

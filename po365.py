@@ -5,7 +5,7 @@ from ipReg import isIPv4, isIPv6
 
 url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".format(uuid.uuid4())
 
-def getIps(optimized = False, tenant = '', serviceArea = ''):
+def getIps(optimized = False, tenant = '', serviceArea = '', *args, **kwargs):
     if tenant != '':
         url = "{}&TenantName={}".format(url,tenant)
     r = requests.get(url)
@@ -37,7 +37,7 @@ def getIps(optimized = False, tenant = '', serviceArea = ''):
     else:
         return False, r.text
 
-def getUrls(optimized = False, tenant = '', serviceArea = ''):
+def getUrls(optimized = False, tenant = '', serviceArea = '', *args, **kwargs):
     if tenant != '':
         url = "{}&TenantName={}".format(url,tenant)
     r = requests.get(url)
