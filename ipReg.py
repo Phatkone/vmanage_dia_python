@@ -5,27 +5,27 @@ regexv6 = "^[0-9a-f]{1,4}:[0-9a-f:]+(\/\d{1,3})?$"
 regexfqdn = "^[A-Za-z0-9\-\.]+$"
 regexwcfqdn = "^[A-Za-z0-9\-\.\*]+$"
 
-def isIPv4(inAddr):
+def isIPv4(inAddr: str) -> bool:
     if re.match(regexv4, inAddr):
         return True
     else:
         return False
 
 
-def isIPv6(inAddr):
+def isIPv6(inAddr: str) -> bool:
     if re.match(regexv6, inAddr):
         return True
     else:
         return False
 
 
-def isFQDN(inAddr):
+def isFQDN(inAddr: str) -> bool:
     if re.match(regexfqdn, inAddr) and isIPv6(inAddr) == False and isIPv4(inAddr) == False:
         return True
     else:
         return False
 
-def isFQDNWildcard(inAddr):
+def isFQDNWildcard(inAddr: str) -> bool:
     if re.match(regexwcfqdn, inAddr) and isIPv6(inAddr) == False and isIPv4(inAddr) == False and isFQDN(inAddr) == False:
         return True
     else:

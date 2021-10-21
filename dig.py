@@ -4,18 +4,10 @@ import dns.query
 import dns.flags
 from ipReg import isIPv4, isIPv6, isFQDN
 
-def dig(fqdn, nameserver = '8.8.8.8'):# Qtype="A", nameserver = '8.8.8.8'):
+def dig(fqdn: str, nameserver: str = '8.8.8.8') -> list:  # Qtype="A", nameserver = '8.8.8.8'):
     domain = dns.name.from_text(fqdn)
     if not domain.is_absolute():
         domain = domain.concatenate(dns.name.root)
-    #if Qtype == "A":
-    #    rdata = dns.rdatatype.A
-    #elif Qtype == "MX":
-    #    rdata = dns.rdatatype.MX
-    #elif Qtype == "any":
-    #    rdata = dns.rdatatype.ANY
-    #else:
-    #    rdata = dns.rdatatype.A
     rdata = dns.rdatatype.A
     request = dns.message.make_query(domain, rdata)
     request.flags |= dns.flags.AD
@@ -28,7 +20,8 @@ def dig(fqdn, nameserver = '8.8.8.8'):# Qtype="A", nameserver = '8.8.8.8'):
         entries.append(str(a))
     return entries
 
-def getARecords(fqdn):
+
+def getARecords(fqdn: str) -> list:
     records = dig(fqdn)
     ret = []
     for record in records:
@@ -44,7 +37,8 @@ def getARecords(fqdn):
             ret.append(record)
     return ret
 
-def getARecord(fqdn):
+
+def getARecord(fqdn: str) -> str:
     while isIPv4(fqdn) == False:
         d = dig(fqdn)
         if len(d) == 1:

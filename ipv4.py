@@ -2,7 +2,7 @@ import struct
 import socket
 import ipReg
 
-def cidr2subnet(cidr) :
+def cidr2subnet(cidr: str) -> str:
     bits = {
         0:0,
         1:128,
@@ -30,7 +30,7 @@ def cidr2subnet(cidr) :
     else:
         return "Invalid CIDR '{}'".format(cidr)
 
-def subnet2cidr(mask):
+def subnet2cidr(mask: str) -> str:
     bits = {
         0:0,
         128:1,
@@ -66,15 +66,15 @@ def subnet2cidr(mask):
         return "Invalid Mask '{}'".format(mask)
 
 
-def ip2int(addr):
+def ip2int(addr: str) -> int:
     if '/' in addr:
         addr = addr.split('/')[0]
     return struct.unpack("!I", socket.inet_aton(addr))[0]
 
-def int2ip(addr):
+def int2ip(addr: int) -> str:
     return socket.inet_ntoa(struct.pack("!I", addr))
 
-def mask2range(subnet):
+def mask2range(subnet: str) -> str:
     if ipReg.isIPv4(subnet):
         if '/' in subnet:
             cidr = int(subnet.split('/')[1])

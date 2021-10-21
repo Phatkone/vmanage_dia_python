@@ -1,4 +1,3 @@
-import asa
 import vmanage
 import time
 import sys
@@ -8,7 +7,6 @@ def main(**kwargs):
     run = True
     while run:
         try: 
-            asa.main()
             vmanage.main()
             time.sleep(300)
         except KeyboardInterrupt:

@@ -5,12 +5,6 @@ class Config:
     
     config = {}
     defaults = {
-        "ftd_user": '',
-        "ftd_password": '',
-        "ftd_address": '',
-        "ftd_port": 443,
-        "ftd_prefix_list": '',
-        "ftd_user_defined_entries": [],
         "vmanage_user": '',
         "vmanage_password": '',
         "vmanage_address": '',
@@ -20,7 +14,8 @@ class Config:
         "retries": 5,
         "timeout": 300,
         "ssl_verify": True,
-        "sharepoint_tenant":""
+        "sharepoint_tenant":"",
+        "o365_version":""
     }
 
     def __init__(self):
@@ -48,8 +43,8 @@ class Config:
             else:
                 newvals[k] = self.defaults[k]
         try:
-            with open(configFile,'w') as f:
-                f.write(json.dumps(newvals,indent=4))
+            with open(configFile, 'w') as f:
+                f.write(json.dumps(newvals, indent=4))
             return True
         except IOError as e:
             return e
