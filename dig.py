@@ -4,7 +4,7 @@ import dns.query
 import dns.flags
 from ipReg import isIPv4, isIPv6, isFQDN
 
-def dig(fqdn: str, nameserver: str = '8.8.8.8') -> list:  # Qtype="A", nameserver = '8.8.8.8'):
+def dig(fqdn: str, nameserver: str = '8.8.8.8') -> list:
     domain = dns.name.from_text(fqdn)
     if not domain.is_absolute():
         domain = domain.concatenate(dns.name.root)
