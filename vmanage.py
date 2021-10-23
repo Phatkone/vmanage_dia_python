@@ -33,13 +33,12 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
         "entries": [
         ]
     }
-    
     for ip in ipv4:
         data["entries"].append({"ipPrefix":ip})
+    
     for entry in user_defined_entries:
         if ipReg.isFQDN(entry):
             records = getARecords(entry)
-            print(entry, records)
             for record in records:
                 if ipReg.isIPv4(record) and (record[-2] == "/" or record[-3] == "/"):
                     data["entries"].append({"ipPrefix":"{}".format(record)})
@@ -47,8 +46,8 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
                     data["entries"].append({"ipPrefix":"{}/32".format(record)})
             del records
         elif ipReg.isIPv4(entry):
-            print(entry)
-            data["entries"].append({"ipPrefix":"{}/32".format(entry)})
+            data["entries"].append({"ipPrefix":"{}/32".format(entry) if '/' not in entry else entry})
+
     success = False
     attempts = 1
 
@@ -69,7 +68,7 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
 
     r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
     js = r.json()
-    pol_id = js["activatedId"]
+    pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
     return pol_id
 
 
@@ -103,11 +102,13 @@ def main() -> None:
         "Content-Type":"application/json",
         "Accept":"application/json"
     }
+    print("Retrieving Session Token")
     s, headers['X-XSRF-TOKEN'] = getSession(config["vmanage_address"], 
         config["vmanage_user"], 
         config["vmanage_password"], 
         config["ssl_verify"]
     )
+    print("Retrieving Data Prefix List")
     data_prefix_list = getDataPrefixList(s, 
         config["vmanage_address"], 
         config["vmanage_port"], 
@@ -115,8 +116,10 @@ def main() -> None:
         config["ssl_verify"]
     )
     if data_prefix_list == "":
-        print("")
+        print("Data Prefix List Not Found {}".format(data_prefix_list))
         return
+    
+    print("Retrieving O365 IP Addresses")
     ipv4, ipv6 = o365.getIPs()
     if type(ipv4) == bool:
         #if ipv4 is type bool then getIPs returned false, ipv6 is the error message
@@ -168,4 +171,7 @@ if __name__ == "__main__":
     if config["ssl_verify"] == False:
         import urllib3
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Interrupted by keyboard")
