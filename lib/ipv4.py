@@ -1,6 +1,6 @@
 import struct
 import socket
-import ipReg
+import lib.ipReg as ipReg
 
 def cidr2subnet(cidr: str) -> str:
     bits = {
