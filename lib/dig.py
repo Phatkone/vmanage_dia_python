@@ -2,7 +2,7 @@ import dns.name
 import dns.message
 import dns.query
 import dns.flags
-from ipReg import isIPv4, isIPv6, isFQDN
+from lib.ipReg import isIPv4, isIPv6, isFQDN
 
 def dig(fqdn: str, nameserver: str = '8.8.8.8') -> list:
     domain = dns.name.from_text(fqdn)

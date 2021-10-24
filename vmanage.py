@@ -1,11 +1,11 @@
 import requests
 import json
-import o365
+import lib.o365 as o365
 import time
-import ipReg
+import lib.ipReg as ipReg
 import sys
-from config import Config
-from dig import getARecords
+from lib.config import Config
+from lib.dig import getARecords
 
 def getSession(url: str, uid: str, pwd: str, verify: bool = True) -> tuple:  
     s = requests.session()

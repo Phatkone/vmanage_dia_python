@@ -2,7 +2,7 @@ import uuid
 import requests
 import json
 import xml.etree.ElementTree as ET
-from ipReg import isIPv4, isIPv6
+from lib.ipReg import isIPv4, isIPv6
 
 rss_url = "https://endpoints.office.com/version/worldwide?allversions=true&format=rss&clientrequestid={}".format(uuid.uuid4())
 url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".format(uuid.uuid4())
