@@ -121,9 +121,8 @@ def main() -> None:
     )
     if verbose:
         print("Session Token: {}".format(headers['X-XSRF-TOKEN']))
-
-    if verbose:
-       print("Retrieving Data Prefix List")
+        print("Retrieving Data Prefix List")
+    
     data_prefix_list = getDataPrefixList(s, 
         config["vmanage_address"], 
         config["vmanage_port"], 
@@ -131,7 +130,7 @@ def main() -> None:
         config["ssl_verify"]
     )
     if verbose:
-        print(data_prefix_list)
+        print("Data Prefix List ID: {}".format(data_prefix_list))
 
     if data_prefix_list == "":
         print("Data Prefix List Not Found {}".format(data_prefix_list))
