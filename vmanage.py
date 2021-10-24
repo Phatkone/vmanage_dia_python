@@ -3,6 +3,7 @@ import json
 import o365
 import time
 import ipReg
+import sys
 from config import Config
 from dig import getARecords
 
@@ -92,7 +93,13 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
 
 
 def main() -> None:
+    if verbose:
+        print("Retrieving latest O365 list version")
     o365_version = o365.getRSSVersion()
+
+    if verbose:
+        print("Version received: {}".format(o365_version))
+
     if config["o365_version"] == o365_version:
         print("No updates from o365. Skipping")
         return
@@ -102,30 +109,47 @@ def main() -> None:
         "Content-Type":"application/json",
         "Accept":"application/json"
     }
-    print("Retrieving Session Token")
+    if verbose:
+        print("Setting content headers: {}".format(headers))
+
+    if verbose:
+        print("Retrieving Session Token")
     s, headers['X-XSRF-TOKEN'] = getSession(config["vmanage_address"], 
         config["vmanage_user"], 
         config["vmanage_password"], 
         config["ssl_verify"]
     )
-    print("Retrieving Data Prefix List")
+    if verbose:
+        print("Session Token: {}".format(headers['X-XSRF-TOKEN']))
+
+    if verbose:
+       print("Retrieving Data Prefix List")
     data_prefix_list = getDataPrefixList(s, 
         config["vmanage_address"], 
         config["vmanage_port"], 
         config["vmanage_data_prefix_list"], 
         config["ssl_verify"]
     )
+    if verbose:
+        print(data_prefix_list)
+
     if data_prefix_list == "":
         print("Data Prefix List Not Found {}".format(data_prefix_list))
         return
     
-    print("Retrieving O365 IP Addresses")
+    if verbose:
+        print("Retrieving O365 IP Addresses")
     ipv4, ipv6 = o365.getIPs()
     if type(ipv4) == bool:
         #if ipv4 is type bool then getIPs returned false, ipv6 is the error message
         print(ipv6)
         exit(-1)
+    if verbose:
+        print(ipv4)
 
+
+    if verbose:
+        print("Updating data prefix list")
     pol_id = updateDataPrefixList(s, 
         config["vmanage_address"], 
         config["vmanage_port"], 
@@ -139,11 +163,15 @@ def main() -> None:
         config["timeout"], 
         config["vmanage_user_defined_entries"]
     )
+    if verbose:
+        print(pol_id)
 
     if len(pol_id) < 1:
         exit("Referenced Policies not found")
 
 
+    if verbose:
+        print("Activating Policies")
     for id in pol_id:
         activatePolicies(s, 
             config["vmanage_address"], 
@@ -154,13 +182,21 @@ def main() -> None:
             config["retries"], 
             config["timeout"]
         )
+    if verbose:
+        print("Successfully updated poicies.")
     
-    print("Successfully updated poicies.")
-    config["o365_version"] = o365_version
+    config["o365_version"] = o365_version   
+    if verbose:
+        print("Saving new O365 list version")
     c.rebuildConfig()
 
 
 if __name__ == "__main__":
+    args = sys.argv
+    verbose = True if ('-v' in args or '--verbose' in args) else False    
+
+    if verbose:
+        print("Retrieving and verifying configuration file")
     c = Config()
     if c.checkConfig() == False:
         c.rebuildConfig()
@@ -169,6 +205,8 @@ if __name__ == "__main__":
     if config["vmanage_address"][0:8] == "https://":
         config["vmanage_address"] = config["vmanage_address"].replace("https://","")
     if config["ssl_verify"] == False:
+        if verbose:
+            print("Disabling SSL Verification")
         import urllib3
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     try:
