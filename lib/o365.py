@@ -10,10 +10,18 @@ url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".form
 def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args, **kwargs) -> tuple:
     global url
     if tenant != '':
-        url = "{}&TenantName={}".format(url,tenant)
+        url = "{}&TenantName={}".format(url, tenant)
+        if verbose:
+            print("Setting TenantName")
+    if verbose:
+        print("Getting IP list from: {}".format(url))
+        if len(proxies) > 0:
+            print("Proxies configured: {}".format(proxies))
     r = requests.get(url, proxies = proxies)
     ipv4 = []
     ipv6 = []
+    if verbose:
+        print("Response: {}".format(r.text))
     if r.status_code == 200:
         js = r.json()
         for entry in js:
@@ -43,10 +51,17 @@ def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', pr
 def getUrls(optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args: list, **kwargs: dict):
     global url
     if tenant != '':
-        url = "{}&TenantName={}".format(url,tenant)
-    print(url)
+        url = "{}&TenantName={}".format(url, tenant)
+        if verbose:
+            print("Setting TenantName")
+    if verbose:
+        print("Getting IP list from: {}".format(url))
+        if len(proxies) > 0:
+            print("Proxies configured: {}".format(proxies))
     r = requests.get(url, proxies = proxies)
     urls = []
+    if verbose:
+        print("Response: {}".format(r.text))
     if r.status_code == 200:
         js = r.json()
         for entry in js:
@@ -67,12 +82,20 @@ def getUrls(optimized: bool = False, tenant: str = '', service_area: str = '', p
 
 def getRSSVersion(proxies: dict = {}, verbose: bool = False):
     global rss_url
+    if verbose:
+        print("Getting RSS Feed from: {}".format(rss_url))
+        if len(proxies) > 0:
+            print("Proxies configured: {}".format(proxies))
     r = requests.get(rss_url, proxies = proxies)
+    if verbose:
+        print("Response: {}".format(r.text))
     if r.status_code != 200:
         return False
     try:
         xml = ET.fromstring(r.text)
         version = xml.find('channel').find('item').find('guid').text
+        if verbose:
+            print("Retrieving GUID from RSS XML: {}".format(version))
     except ET.ParseError as e:
         print("Error retrieving O365 Version:\n> {}".format(e))
         return False

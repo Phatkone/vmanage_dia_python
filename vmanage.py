@@ -122,7 +122,11 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
     attempts = 1
     success = False
     while success == False and attempts <= retries:
+        if verbose:
+            print("Posting to activate policy at: https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id))
         r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id), headers=headers, data="{}",verify=verify)
+        if verbose:
+            print("Response: {}".format(r.text))
         if r.status_code == 200:
             print("vSmart Activate Triggered")
             success = True
