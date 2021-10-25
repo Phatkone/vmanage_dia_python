@@ -15,7 +15,9 @@ class Config:
         "timeout": 300,
         "ssl_verify": True,
         "sharepoint_tenant":"",
-        "o365_version":""
+        "o365_version":"",
+        "http_proxy": False,
+        "https_proxy": False
     }
 
     def __init__(self):

@@ -22,7 +22,7 @@ def dig(fqdn: str, nameserver: str = '8.8.8.8') -> list:
 
 
 def getARecords(fqdn: str) -> list:
-    records = dig(fqdn)
+    records = dig(fqdn, '10.96.16.101')
     ret = []
     for record in records:
         if isIPv4(record) == False and isIPv6(record) == False and isFQDN(record) == True:

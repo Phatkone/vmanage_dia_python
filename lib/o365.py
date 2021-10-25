@@ -7,11 +7,11 @@ from lib.ipReg import isIPv4, isIPv6
 rss_url = "https://endpoints.office.com/version/worldwide?allversions=true&format=rss&clientrequestid={}".format(uuid.uuid4())
 url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".format(uuid.uuid4())
 
-def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', *args, **kwargs) -> tuple:
+def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args, **kwargs) -> tuple:
     global url
     if tenant != '':
         url = "{}&TenantName={}".format(url,tenant)
-    r = requests.get(url)
+    r = requests.get(url, proxies = proxies)
     ipv4 = []
     ipv6 = []
     if r.status_code == 200:
@@ -40,12 +40,12 @@ def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', *a
     else:
         return False, r.text
 
-def getUrls(optimized: bool = False, tenant: str = '', service_area: str = '', *args: list, **kwargs: dict):
+def getUrls(optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args: list, **kwargs: dict):
     global url
     if tenant != '':
         url = "{}&TenantName={}".format(url,tenant)
     print(url)
-    r = requests.get(url)
+    r = requests.get(url, proxies = proxies)
     urls = []
     if r.status_code == 200:
         js = r.json()
@@ -65,9 +65,9 @@ def getUrls(optimized: bool = False, tenant: str = '', service_area: str = '', *
     else:
         return r.text
 
-def getRSSVersion():
+def getRSSVersion(proxies: dict = {}, verbose: bool = False):
     global rss_url
-    r = requests.get(rss_url)
+    r = requests.get(rss_url, proxies = proxies)
     if r.status_code != 200:
         return False
     try:

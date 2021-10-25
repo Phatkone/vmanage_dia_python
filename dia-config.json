@@ -1,7 +1,7 @@
 {
     "vmanage_user": "admin",
     "vmanage_password": "admin",
-    "vmanage_address": "10.96.31.50",
+    "vmanage_address": "10.96.31.54",
     "vmanage_port": 443,
     "vmanage_data_prefix_list": "O365_DIA",
     "vmanage_user_defined_entries": [
@@ -13,5 +13,7 @@
     "timeout": 1,
     "ssl_verify": false,
     "sharepoint_tenant": "0",
-    "o365_version": "0"
+    "o365_version": "2021092800",
+    "http_proxy": false,
+    "https_proxy": false
 }

@@ -95,7 +95,7 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
 def main() -> None:
     if verbose:
         print("Retrieving latest O365 list version")
-    o365_version = o365.getRSSVersion()
+    o365_version = o365.getRSSVersion(proxies, verbose)
 
     if verbose:
         print("Version received: {}".format(o365_version))
@@ -138,7 +138,7 @@ def main() -> None:
     
     if verbose:
         print("Retrieving O365 IP Addresses")
-    ipv4, ipv6 = o365.getIPs()
+    ipv4, ipv6 = o365.getIPs(proxies = proxies, verbose = verbose)
     if type(ipv4) == bool:
         #if ipv4 is type bool then getIPs returned false, ipv6 is the error message
         print(ipv6)
@@ -203,6 +203,11 @@ if __name__ == "__main__":
     config = c.config
     if config["vmanage_address"][0:8] == "https://":
         config["vmanage_address"] = config["vmanage_address"].replace("https://","")
+    proxies = {}
+    if config['http_proxy'] is not None:
+        proxies['http'] = config['http_proxy']
+    if config['https_proxy'] is not None:
+        proxies['https'] = config['https_proxy']
     if config["ssl_verify"] == False:
         if verbose:
             print("Disabling SSL Verification")
