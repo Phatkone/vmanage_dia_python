@@ -7,53 +7,92 @@ import sys
 from lib.config import Config
 from lib.dig import getARecords
 
-def getSession(url: str, uid: str, pwd: str, verify: bool = True) -> tuple:  
+def getSession(url: str, uid: str, pwd: str, verify: bool = True, verbose: bool = False, *args, **kwargs) -> tuple:  
     s = requests.session()
+    if verbose:
+        print("Initialising Session")
+        print("Logging in to https://{}/j_security_check".format(url))
     r = s.post("https://{}/j_security_check".format(url),data={"j_username":uid,"j_password":pwd}, verify=verify)
+    if verbose:
+        print("Response: {}".format(r.text))
+        print("Retrieving client XSRF token")
     t = s.get("https://{}/dataservice/client/token".format(url))
+    if verbose:
+        print("Response: {}".format(t.text))
     t = t.text
     if b"<html>" in  r.content:
         exit("vManage login failed")
     return s, t
 
 
-def getDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_name: str, verify: bool = True) -> str:
+def getDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_name: str, verify: bool = True, verbose: bool = False, *args, **kwargs) -> str:
+    if verbose:
+        print("Retrieving data prefix list from: https://{}:{}/dataservice/template/policy/list/dataprefix".format(url, port))
     r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix".format(url, port), verify = verify)
+    if verbose:
+        print("Response: {}".format(r.text))
     js = r.json()
     list_id = ""
     entries = js['data']
+    if verbose:
+        print("data response: {} ".format(entries))
     for entry in entries:
         if entry['name'] == list_name:
             list_id = entry["listId"]
+            if verbose:
+                print("list name matches configuration. listId: {}".format(list_id))
     return list_id
 
 
-def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_id: str, list_name: str, verify: bool, headers: dict, ipv4: list, ipv6: list, retries: int, timeout: int, user_defined_entries: list = []) -> str:
+def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_id: str, list_name: str, verify: bool, headers: dict, ipv4: list, ipv6: list, retries: int, timeout: int, user_defined_entries: list = [], verbose: bool = False, *args, **kwargs) -> str:
     data = {
         "name" :list_name,
         "entries": [
         ]
     }
+    if verbose:
+        print("Creating data prefix list structure. ")
     for ip in ipv4:
+        if verbose:
+            print("Adding entry: {}".format(ip))
         data["entries"].append({"ipPrefix":ip})
     
+    
+    if verbose:
+        print("Processing user defined entries")
     for entry in user_defined_entries:
         if ipReg.isFQDN(entry):
+            if verbose:
+                print("FQDN Record: {}".format(entry))
             records = getARecords(entry)
+            if verbose:
+                print("A Record(s): {}".format(records))
             for record in records:
                 if ipReg.isIPv4(record) and (record[-2] == "/" or record[-3] == "/"):
                     data["entries"].append({"ipPrefix":"{}".format(record)})
+                    if verbose:
+                        print("Adding CIDR Entry: {}".format(record))
                 elif ipReg.isIPv4(record):
+                    if verbose:
+                        print("Adding /32 entry: {}/32".format(record))
                     data["entries"].append({"ipPrefix":"{}/32".format(record)})
             del records
         elif ipReg.isIPv4(entry):
+            if verbose:
+                print("Adding entry: {}".format(entry))
             data["entries"].append({"ipPrefix":"{}/32".format(entry) if '/' not in entry else entry})
 
     success = False
     attempts = 1
 
+    if verbose:
+        print("Putting new data prefix list data into vManage")
     while success == False and attempts <= retries:
+        if verbose:
+            print("Put request to: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
         r = s.put("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify, data=json.dumps(data))
+        if verbose:
+            print("Response: {}".format(r.text))
         if "error" in r.json().keys():
             print("\nError:\n ", r.json()["error"]["message"], "\n ", r.json()["error"]["details"], "\n")
             if attempts == retries:
@@ -64,16 +103,22 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
             attempts += 1
             time.sleep(timeout)
         else:
+            if verbose:
+                print("Successfully loaded new data prefix list entries")
             success = True
             continue
 
+    if verbose:
+        print("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
     r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
+    if verbose:
+        print("Response: {}".format(r.text))
     js = r.json()
     pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
     return pol_id
 
 
-def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: bool, headers: dict, pol_id: str, retries: int, timeout: int) -> None:
+def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: bool, headers: dict, pol_id: str, retries: int, timeout: int, verbose: bool = False, *args, **kwargs) -> None:
     attempts = 1
     success = False
     while success == False and attempts <= retries:
@@ -127,7 +172,8 @@ def main() -> None:
         config["vmanage_address"], 
         config["vmanage_port"], 
         config["vmanage_data_prefix_list"], 
-        config["ssl_verify"]
+        config["ssl_verify"],
+        verbose
     )
     if verbose:
         print("Data Prefix List ID: {}".format(data_prefix_list))
