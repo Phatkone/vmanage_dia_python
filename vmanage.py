@@ -64,7 +64,7 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
         if ipReg.isFQDN(entry):
             if verbose:
                 print("FQDN Record: {}".format(entry))
-            records = getARecords(entry)
+            records = getARecords(entry, config['dns_server'])
             if verbose:
                 print("A Record(s): {}".format(records))
             for record in records:
@@ -188,7 +188,15 @@ def main() -> None:
     
     if verbose:
         print("Retrieving O365 IP Addresses")
-    ipv4, ipv6 = o365.getIPs(proxies = proxies, verbose = verbose)
+    optimized = bool(config['optimized'])
+    tenant = config['tenant']
+    service_area = config['service_area']
+    ipv4, ipv6 = o365.getIPs(optimized,
+        tenant, 
+        service_area,
+        proxies, 
+        verbose
+    )
     if type(ipv4) == bool:
         #if ipv4 is type bool then getIPs returned false, ipv6 is the error message
         print(ipv6)

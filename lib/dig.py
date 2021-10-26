@@ -21,12 +21,12 @@ def dig(fqdn: str, nameserver: str = '8.8.8.8') -> list:
     return entries
 
 
-def getARecords(fqdn: str) -> list:
-    records = dig(fqdn, '10.96.16.101')
+def getARecords(fqdn: str, dns_server: str = '8.8.8.8') -> list:
+    records = dig(fqdn, dns_server)
     ret = []
     for record in records:
         if isIPv4(record) == False and isIPv6(record) == False and isFQDN(record) == True:
-            r = getARecord(record)
+            r = getARecord(record, dns_server)
             if type(r) == list:
                 for v in r:
                     if len(v) > 1:
@@ -38,14 +38,14 @@ def getARecords(fqdn: str) -> list:
     return ret
 
 
-def getARecord(fqdn: str) -> str:
+def getARecord(fqdn: str, dns_server: str = '8.8.8.8') -> str:
     while isIPv4(fqdn) == False:
-        d = dig(fqdn)
+        d = dig(fqdn, dns_server)
         if len(d) == 1:
             fqdn = d[0]
         elif len(d) > 1:
             for r in d:
-                getARecord(r)
+                getARecord(r, dns_server)
         elif len(d) == 0:
             return 
     return fqdn

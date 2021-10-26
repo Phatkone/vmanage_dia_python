@@ -17,7 +17,11 @@ class Config:
         "sharepoint_tenant":"",
         "o365_version":"",
         "http_proxy": False,
-        "https_proxy": False
+        "https_proxy": False,
+        "optimized": False,
+        "tenant": None,
+        "service_area": None,
+        "dns_server": "1.1.1.1"
     }
 
     def __init__(self):

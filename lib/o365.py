@@ -9,7 +9,7 @@ url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".form
 
 def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args, **kwargs) -> tuple:
     global url
-    if tenant != '':
+    if tenant != '' and tenant is not None:
         url = "{}&TenantName={}".format(url, tenant)
         if verbose:
             print("Setting TenantName")
@@ -28,7 +28,7 @@ def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', pr
             if "ips" in entry.keys():
                 if optimized and ('category' in entry.keys() and entry['category'] != 'Optimize'):
                     continue
-                if service_area != "" and entry['serviceArea'].lower() == service_area.lower():
+                if service_area != "" and service_area is not None and entry['serviceArea'].lower() == service_area.lower():
                     for ip in entry["ips"]:
                         if isIPv4(ip):
                             if ip not in ipv4:
@@ -36,7 +36,7 @@ def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', pr
                         elif isIPv6(ip):
                             if ip not in ipv6:
                                 ipv6.append(ip)
-                elif service_area == '':
+                elif service_area == '' or service_area is None:
                     for ip in entry["ips"]:
                         if isIPv4(ip):
                             if ip not in ipv4:
