@@ -1,11 +1,18 @@
-# Cisco SD-WAN vManage DIA Dynamic Updater
+# Cisco SD-WAN vManage Data Prefix List Dynamic Updater
 
 ## Purpose
 This tool dynamically updates a Data Prefix List in vManage with Microsoft o365 IPv4 addresses.
-Additional DIA addresses and subnets can be added through the configuration file as IPv4 addresses or FQDNs (no wildcards).
+Additional direct internet addresses and subnets can be added through the configuration file as IPv4 addresses or FQDNs (no wildcards).
+The o365 list can be manipulated to only populate the optimize tagged addresses or even specific tenancies.
 
+## Requirements
+This script has been built for python3. No testing has been performed on python2 and as such is not supported.
+The following pip packages are required for operation:
+ - requests
+ - dnspythong
 
-dynamic updating of split tunneling destinations for vManage
+## Configuration File
+All configuration is 
 
 dia-config.json contains all required configurables.
 
