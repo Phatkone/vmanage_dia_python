@@ -4,48 +4,51 @@ import lib.o365 as o365
 import time
 import lib.ipReg as ipReg
 import sys
+from lib.bcolours import cprint
 from lib.config import Config
 from lib.dig import getARecords
+
 
 def getSession(url: str, uid: str, pwd: str, verify: bool = True, verbose: bool = False, *args, **kwargs) -> tuple:  
     s = requests.session()
     if verbose:
-        print("Initialising Session")
-        print("Logging in to https://{}/j_security_check".format(url))
+        cprint("Initialising Session", 'purple')
+        cprint("Logging in to https://{}/j_security_check".format(url), 'purple')
     try:
         r = s.post("https://{}/j_security_check".format(url),data={"j_username":uid,"j_password":pwd}, verify=verify)
     except requests.exceptions.ConnectionError as e:
-        print("Unable to establish session to vManage:\n{}".format(e))
+        cprint("Unable to establish session to vManage:\n{}".format(e), 'red')
         exit()
     
     if verbose:
-        print("Response: {}".format(r.text))
-        print("Retrieving client XSRF token")
+        cprint("Response: {}".format(r.text), 'purple')
+        cprint("Retrieving client XSRF token", 'purple')
     t = s.get("https://{}/dataservice/client/token".format(url))
     if verbose:
-        print("Response: {}".format(t.text))
+        cprint("Response: {}".format(t.text), 'purple')
     t = t.text
     if b"<html>" in  r.content:
-        exit("vManage login failed")
+        cprint("vManage login failed", 'red')
+        exit(-1)
     return s, t
 
 
 def getDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_name: str, verify: bool = True, verbose: bool = False, *args, **kwargs) -> str:
     if verbose:
-        print("Retrieving data prefix list from: https://{}:{}/dataservice/template/policy/list/dataprefix".format(url, port))
+        cprint("Retrieving data prefix list from: https://{}:{}/dataservice/template/policy/list/dataprefix".format(url, port), 'purple')
     r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix".format(url, port), verify = verify)
     if verbose:
-        print("Response: {}".format(r.text))
+        cprint("Response: {}".format(r.text), 'purple')
     js = r.json()
     list_id = ""
     entries = js['data']
     if verbose:
-        print("data response: {} ".format(entries))
+        cprint("data response: {} ".format(entries), 'purple')
     for entry in entries:
         if entry['name'] == list_name:
             list_id = entry["listId"]
             if verbose:
-                print("list name matches configuration. listId: {}".format(list_id))
+                cprint("list name matches configuration. listId: {}".format(list_id), 'purple')
     return list_id
 
 
@@ -56,74 +59,74 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
         ]
     }
     if verbose:
-        print("Creating data prefix list structure. ")
+        cprint("Creating data prefix list structure. ")
     for ip in ipv4:
         if verbose:
-            print("Adding entry: {}".format(ip))
+            cprint("Adding entry: {}".format(ip))
         data["entries"].append({"ipPrefix":ip})
     
     
     if verbose:
-        print("Processing user defined entries")
+        cprint("Processing user defined entries")
     for entry in user_defined_entries:
         if ipReg.isFQDN(entry):
             if verbose:
-                print("FQDN Record: {}".format(entry))
+                cprint("FQDN Record: {}".format(entry))
             records = getARecords(entry, config['dns_server'])
             if verbose:
-                print("A Record(s): {}".format(records))
+                cprint("A Record(s): {}".format(records))
             for record in records:
                 if ipReg.isIPv4(record) and (record[-2] == "/" or record[-3] == "/"):
                     data["entries"].append({"ipPrefix":"{}".format(record)})
                     if verbose:
-                        print("Adding CIDR Entry: {}".format(record))
+                        cprint("Adding CIDR Entry: {}".format(record))
                 elif ipReg.isIPv4(record):
                     if verbose:
-                        print("Adding /32 entry: {}/32".format(record))
+                        cprint("Adding /32 entry: {}/32".format(record))
                     data["entries"].append({"ipPrefix":"{}/32".format(record)})
             del records
         elif ipReg.isIPv4(entry):
             if verbose:
-                print("Adding entry: {}".format(entry))
+                cprint("Adding entry: {}".format(entry))
             data["entries"].append({"ipPrefix":"{}/32".format(entry) if '/' not in entry else entry})
 
     success = False
     attempts = 1
 
     if verbose or dry:
-        print("New Data Prefix List: {}".format(json.dumps(data, indent=2)))
+        cprint("New Data Prefix List: {}".format(json.dumps(data, indent=2)))
 
     if verbose:
-        print("Putting new data prefix list data into vManage")
+        cprint("Putting new data prefix list data into vManage")
     while success == False and attempts <= retries:
         if verbose or dry:
-            print("Put request to: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
+            cprint("Put request to: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
         if dry:
             success = True
             continue
         r = s.put("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify, data=json.dumps(data))
         if verbose:
-            print("Response: {}".format(r.text))
+            cprint("Response: {}".format(r.text))
         if "error" in r.json().keys():
-            print("\nError:\n ", r.json()["error"]["message"], "\n ", r.json()["error"]["details"], "\n")
+            cprint("\nError:\n ", r.json()["error"]["message"], "\n ", r.json()["error"]["details"], "\n")
             if attempts == retries:
-                print("Exceeded attempts {} of {}".format(attempts, retries))
+                cprint("Exceeded attempts {} of {}".format(attempts, retries))
                 exit(-1)
             else:
-                print("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries))
+                cprint("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries))
             attempts += 1
             time.sleep(timeout)
         else:
             if verbose:
-                print("Successfully loaded new data prefix list entries")
+                cprint("Successfully loaded new data prefix list entries")
             success = True
             continue
 
     if verbose or dry:
-        print("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
+        cprint("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
     r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
     if verbose:
-        print("Response: {}".format(r.text))
+        cprint("Response: {}".format(r.text))
     js = r.json()
     pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
     return pol_id
@@ -134,23 +137,23 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
     success = False
     while success == False and attempts <= retries:
         if verbose or dry:
-            print("Posting to activate policy at: https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id))
+            cprint("Posting to activate policy at: https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id))
         if dry:
             success = True
             return
         r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id), headers=headers, data="{}",verify=verify)
         if verbose:
-            print("Response: {}".format(r.text))
+            cprint("Response: {}".format(r.text))
         if r.status_code == 200:
-            print("vSmart Activate Triggered")
+            cprint("vSmart Activate Triggered")
             success = True
         else:
-            print(r.status_code, r.text)
+            cprint(r.status_code, r.text)
             if attempts == retries:
-                print("Exceeded attempts {} of {}".format(attempts, retries))
+                cprint("Exceeded attempts {} of {}".format(attempts, retries))
                 exit(-1)
             else:
-                print("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries))
+                cprint("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries))
             attempts += 1
             time.sleep(timeout)
 
@@ -158,34 +161,34 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
 def main() -> None:
     instance = config['instance']
     if verbose:
-        print("Retrieving latest O365 list version")
+        cprint("Retrieving latest O365 list version")
     o365_version = o365.getRSSVersion(instance, proxies, verbose)
 
     if verbose:
-        print("Version received: {}".format(o365_version))
+        cprint("Version received: {}".format(o365_version))
 
     if config["o365_version"] == o365_version:
-        print("No updates from o365. Skipping")
+        cprint("No updates from o365. Skipping")
         return
-    print("Last saved o365 list version: {} new version: {}. Continuing.".format(config["o365_version"], o365_version))
+    cprint("Last saved o365 list version: {} new version: {}. Continuing.".format(config["o365_version"], o365_version))
 
     headers = {
         "Content-Type":"application/json",
         "Accept":"application/json"
     }
     if verbose:
-        print("Setting content headers: {}".format(headers))
+        cprint("Setting content headers: {}".format(headers))
 
     if verbose:
-        print("Retrieving Session Token")
+        cprint("Retrieving Session Token")
     s, headers['X-XSRF-TOKEN'] = getSession(config["vmanage_address"], 
         config["vmanage_user"], 
         config["vmanage_password"], 
         config["ssl_verify"]
     )
     if verbose:
-        print("Session Token: {}".format(headers['X-XSRF-TOKEN']))
-        print("Retrieving Data Prefix List")
+        cprint("Session Token: {}".format(headers['X-XSRF-TOKEN']))
+        cprint("Retrieving Data Prefix List")
     
     data_prefix_list = getDataPrefixList(s, 
         config["vmanage_address"], 
@@ -195,14 +198,14 @@ def main() -> None:
         verbose
     )
     if verbose:
-        print("Data Prefix List ID: {}".format(data_prefix_list))
+        cprint("Data Prefix List ID: {}".format(data_prefix_list))
 
     if data_prefix_list == "":
-        print("Data Prefix List Not Found {}".format(data_prefix_list))
+        cprint("Data Prefix List Not Found {}".format(data_prefix_list))
         return
     
     if verbose:
-        print("Retrieving O365 IP Addresses")
+        cprint("Retrieving O365 IP Addresses")
     optimized = bool(config['optimized'])
     tenant = config['tenant']
     service_area = config['service_area']
@@ -214,14 +217,14 @@ def main() -> None:
     )
     if type(ipv4) == bool:
         #if ipv4 is type bool then getIPs returned false, ipv6 is the error message
-        print(ipv6)
+        cprint(ipv6)
         exit(-1)
     if verbose:
-        print(ipv4)
+        cprint(ipv4)
 
 
     if verbose:
-        print("Updating data prefix list")
+        cprint("Updating data prefix list")
     
     pol_id = updateDataPrefixList(s, 
         config["vmanage_address"], 
@@ -239,13 +242,13 @@ def main() -> None:
         dry
     )
     if verbose:
-        print(pol_id)
+        cprint(pol_id)
 
     if len(pol_id) < 1:
         exit("Referenced Policies not found")
 
     if verbose or dry:
-        print("Activating Policies")
+        cprint("Activating Policies")
     for id in pol_id:
         activatePolicies(s, 
             config["vmanage_address"], 
@@ -259,11 +262,11 @@ def main() -> None:
             dry
         )
     if verbose:
-        print("Successfully updated poicies.")
+        cprint("Successfully updated poicies.")
     
     config["o365_version"] = o365_version   
     if verbose:
-        print("Saving new O365 list version")
+        cprint("Saving new O365 list version")
     c.rebuildConfig()
 
 
@@ -273,7 +276,7 @@ if __name__ == "__main__":
     dry = True if ('-d' in args or '--dry' in args) else False
 
     if verbose:
-        print("Retrieving and verifying configuration file")
+        cprint("Retrieving and verifying configuration file")
     c = Config()
     if c.checkConfig() == False:
         c.rebuildConfig()
@@ -288,10 +291,10 @@ if __name__ == "__main__":
         proxies['https'] = config['https_proxy']
     if config["ssl_verify"] == False:
         if verbose:
-            print("Disabling SSL Verification")
+            cprint("Disabling SSL Verification")
         import urllib3
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     try:
         main()
     except KeyboardInterrupt:
-        print("Interrupted by keyboard")
+        cprint("Interrupted by keyboard")
