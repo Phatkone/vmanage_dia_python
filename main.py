@@ -8,7 +8,7 @@ def main(**kwargs):
     while run:
         try: 
             vmanage.main()
-            time.sleep(300)
+            time.sleep(86400)
         except KeyboardInterrupt:
             run = False
 

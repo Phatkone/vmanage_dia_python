@@ -14,14 +14,13 @@ class Config:
         "retries": 5,
         "timeout": 300,
         "ssl_verify": True,
-        "sharepoint_tenant":"",
-        "o365_version":"",
         "http_proxy": False,
         "https_proxy": False,
         "optimized": False,
         "tenant": None,
         "service_area": None,
-        "dns_server": "1.1.1.1"
+        "dns_server": "1.1.1.1",
+        "o365_version":""
     }
 
     def __init__(self):

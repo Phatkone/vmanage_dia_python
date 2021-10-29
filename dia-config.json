@@ -12,12 +12,11 @@
     "retries": 5,
     "timeout": 1,
     "ssl_verify": false,
-    "sharepoint_tenant": "0",
-    "o365_version": "2021092800",
     "http_proxy": false,
     "https_proxy": false,
     "optimized": false,
     "tenant": null,
     "service_area": null,
-    "dns_server": "10.96.16.101"
+    "dns_server": "10.96.16.101",
+    "o365_version": "2021092800"
 }
