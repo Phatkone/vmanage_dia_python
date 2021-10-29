@@ -1,4 +1,11 @@
-dynamic updating of split tunneling destinations for Cisco FTD/ASA and vManage
+# Cisco SD-WAN vManage DIA Dynamic Updater
+
+## Purpose
+This tool dynamically updates a Data Prefix List in vManage with Microsoft o365 IPv4 addresses.
+Additional DIA addresses and subnets can be added through the configuration file as IPv4 addresses or FQDNs (no wildcards).
+
+
+dynamic updating of split tunneling destinations for vManage
 
 dia-config.json contains all required configurables.
 
