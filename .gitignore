@@ -2,3 +2,5 @@ __pycache__/*
 lib/__pycache__
 .vscode/*
 env/*
+dia-config.json
+.vs/*

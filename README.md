@@ -11,6 +11,7 @@ This script has been built for python3. No testing has been performed on python2
 The following pip packages are required for operation:
  - requests
  - dnspythong
+ - json
 
 ## Configuration File
 All configuration is in the dia-config.json file.
@@ -38,13 +39,16 @@ The format is as follows:
     # SSL verification. May need to set to false if the certificate for vManage isn't trusted or if a web proxy with SSL decryption is utilised - boolean
     "ssl_verify": false,
     # http/https proxy if used by the environment. false if unused, string if used. Pass credentials if necessary as http basic auth syntax.
+    # These proxies are only applied for the O365 list requests, calls to vManage do not use the proxies.
     "http_proxy": false,
     "https_proxy": "username:password@10.1.1.1:8080",
+    # Microsoft Instance - string: Worldwide, USGovDoD, USGovGCCHigh, China, Germany
+    "instance": "WorldWide",
     # Microsoft Optimized list only. - boolean
     "optimized": false,
     # Tenant if retrieving specific addresses only. - string
     "tenant": null,
-    # Microsoft o365 service area. - string
+    # Microsoft o365 service area. - string: Common, Exchange, SharePoint, Skype or null
     "service_area": null,
     # DNS server address (single) - string
     "dns_server": "1.1.1.1",
@@ -58,5 +62,10 @@ Call vManage.py to execute.
 main.py will call vManage.py every 86,400 seconds (24 hours) if you wish to have it run by itself.
 *This is not advised. Recommend using a cron job to schedule the script for recurring use.*
 
+This script can run with --verbose or -v for verbose run and --dry or -d for a dry run.
+
 ## License
 [GNU GPL 3.0](LICENSE) License applies.
+
+## Author
+Craig B. [Phatkone](https://github.com/Phatkone) 

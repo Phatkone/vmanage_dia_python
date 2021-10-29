@@ -4,15 +4,21 @@ import json
 import xml.etree.ElementTree as ET
 from lib.ipReg import isIPv4, isIPv6
 
-rss_url = "https://endpoints.office.com/version/worldwide?allversions=true&format=rss&clientrequestid={}".format(uuid.uuid4())
-url = "https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".format(uuid.uuid4())
+rss_url = "https://endpoints.office.com/version/<instance>?allversions=true&format=rss&clientrequestid={}".format(uuid.uuid4())
+url = "https://endpoints.office.com/endpoints/<instance>?clientrequestid={}".format(uuid.uuid4())
 
-def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args, **kwargs) -> tuple:
+def getIPs(instance: str = "WorldWide", optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args, **kwargs) -> tuple:
     global url
+    url = url.replace('<instance>', instance)
     if tenant != '' and tenant is not None:
         url = "{}&TenantName={}".format(url, tenant)
         if verbose:
-            print("Setting TenantName")
+            print("Setting TenantName: {}".format(tenant))
+    if service_area != '' and service_area is not None:
+        url = "{}&ServiceAreas={}".format(url, service_area)
+        if verbose:
+            print("Setting ServiceArea: {}".format(service_area))
+
     if verbose:
         print("Getting IP list from: {}".format(url))
         if len(proxies) > 0:
@@ -48,12 +54,17 @@ def getIPs(optimized: bool = False, tenant: str = '', service_area: str = '', pr
     else:
         return False, r.text
 
-def getUrls(optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args: list, **kwargs: dict):
+def getUrls(instance: str = "WorldWide", optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args: list, **kwargs: dict):
     global url
+    url = url.replace('<instance>', instance)
     if tenant != '':
         url = "{}&TenantName={}".format(url, tenant)
         if verbose:
             print("Setting TenantName")
+    if service_area != '' and service_area is not None:
+        url = "{}&ServiceAreas={}".format(url, service_area)
+        if verbose:
+            print("Setting ServiceArea: {}".format(service_area))
     if verbose:
         print("Getting IP list from: {}".format(url))
         if len(proxies) > 0:

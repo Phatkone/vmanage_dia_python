@@ -44,7 +44,7 @@ def getDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_na
     return list_id
 
 
-def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_id: str, list_name: str, verify: bool, headers: dict, ipv4: list, ipv6: list, retries: int, timeout: int, user_defined_entries: list = [], verbose: bool = False, *args, **kwargs) -> str:
+def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list_id: str, list_name: str, verify: bool, headers: dict, ipv4: list, ipv6: list, retries: int, timeout: int, user_defined_entries: list = [], verbose: bool = False, dry: bool = False, *args, **kwargs) -> str:
     data = {
         "name" :list_name,
         "entries": [
@@ -85,11 +85,17 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
     success = False
     attempts = 1
 
+    if verbose or dry:
+        print("New Data Prefix List: {}".format(json.dumps(data, indent=2)))
+
     if verbose:
         print("Putting new data prefix list data into vManage")
     while success == False and attempts <= retries:
-        if verbose:
+        if verbose or dry:
             print("Put request to: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
+        if dry:
+            success = True
+            continue
         r = s.put("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify, data=json.dumps(data))
         if verbose:
             print("Response: {}".format(r.text))
@@ -108,7 +114,7 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
             success = True
             continue
 
-    if verbose:
+    if verbose or dry:
         print("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id))
     r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
     if verbose:
@@ -118,12 +124,15 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
     return pol_id
 
 
-def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: bool, headers: dict, pol_id: str, retries: int, timeout: int, verbose: bool = False, *args, **kwargs) -> None:
+def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: bool, headers: dict, pol_id: str, retries: int, timeout: int, verbose: bool = False, dry: bool = False, *args, **kwargs) -> None:
     attempts = 1
     success = False
     while success == False and attempts <= retries:
-        if verbose:
+        if verbose or dry:
             print("Posting to activate policy at: https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id))
+        if dry:
+            success = True
+            return
         r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id), headers=headers, data="{}",verify=verify)
         if verbose:
             print("Response: {}".format(r.text))
@@ -188,10 +197,11 @@ def main() -> None:
     
     if verbose:
         print("Retrieving O365 IP Addresses")
+    instance = config['instance']
     optimized = bool(config['optimized'])
     tenant = config['tenant']
     service_area = config['service_area']
-    ipv4, ipv6 = o365.getIPs(optimized,
+    ipv4, ipv6 = o365.getIPs(instance, optimized,
         tenant, 
         service_area,
         proxies, 
@@ -207,6 +217,7 @@ def main() -> None:
 
     if verbose:
         print("Updating data prefix list")
+    
     pol_id = updateDataPrefixList(s, 
         config["vmanage_address"], 
         config["vmanage_port"], 
@@ -218,7 +229,9 @@ def main() -> None:
         ipv6, 
         config["retries"], 
         config["timeout"], 
-        config["vmanage_user_defined_entries"]
+        config["vmanage_user_defined_entries"],
+        verbose,
+        dry
     )
     if verbose:
         print(pol_id)
@@ -226,8 +239,7 @@ def main() -> None:
     if len(pol_id) < 1:
         exit("Referenced Policies not found")
 
-
-    if verbose:
+    if verbose or dry:
         print("Activating Policies")
     for id in pol_id:
         activatePolicies(s, 
@@ -237,7 +249,9 @@ def main() -> None:
             headers, 
             id, 
             config["retries"], 
-            config["timeout"]
+            config["timeout"],
+            verbose,
+            dry
         )
     if verbose:
         print("Successfully updated poicies.")
@@ -250,7 +264,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     args = sys.argv
-    verbose = True if ('-v' in args or '--verbose' in args) else False    
+    verbose = True if ('-v' in args or '--verbose' in args) else False
+    dry = True if ('-d' in args or '--dry' in args) else False
 
     if verbose:
         print("Retrieving and verifying configuration file")

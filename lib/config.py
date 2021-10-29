@@ -16,6 +16,7 @@ class Config:
         "ssl_verify": True,
         "http_proxy": False,
         "https_proxy": False,
+        "instance": "WorldWide",
         "optimized": False,
         "tenant": None,
         "service_area": None,
@@ -31,6 +32,9 @@ class Config:
             print(e)
     
     def checkConfig(self):
+        if not len(self.config):
+            print("Config file missing. Creating new file 'dia-config.json'")
+            return False
         for k in self.defaults.keys():
             if k not in self.config.keys():
                 print("Missing '{}' key from config file".format(k))
