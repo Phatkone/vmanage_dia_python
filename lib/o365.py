@@ -4,12 +4,9 @@ import json
 import xml.etree.ElementTree as ET
 from lib.ipReg import isIPv4, isIPv6
 
-rss_url = "https://endpoints.office.com/version/<instance>?allversions=true&format=rss&clientrequestid={}".format(uuid.uuid4())
-url = "https://endpoints.office.com/endpoints/<instance>?clientrequestid={}".format(uuid.uuid4())
 
 def getIPs(instance: str = "WorldWide", optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args, **kwargs) -> tuple:
-    global url
-    url = url.replace('<instance>', instance)
+    url = "https://endpoints.office.com/endpoints/{}?clientrequestid={}".format(instance, uuid.uuid4())
     if tenant != '' and tenant is not None:
         url = "{}&TenantName={}".format(url, tenant)
         if verbose:
@@ -55,8 +52,7 @@ def getIPs(instance: str = "WorldWide", optimized: bool = False, tenant: str = '
         return False, r.text
 
 def getUrls(instance: str = "WorldWide", optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args: list, **kwargs: dict):
-    global url
-    url = url.replace('<instance>', instance)
+    url = "https://endpoints.office.com/endpoints/{}?clientrequestid={}".format(instance, uuid.uuid4())
     if tenant != '':
         url = "{}&TenantName={}".format(url, tenant)
         if verbose:
@@ -91,8 +87,8 @@ def getUrls(instance: str = "WorldWide", optimized: bool = False, tenant: str = 
     else:
         return r.text
 
-def getRSSVersion(proxies: dict = {}, verbose: bool = False):
-    global rss_url
+def getRSSVersion(instance: str = "WorldWide", proxies: dict = {}, verbose: bool = False):
+    rss_url = "https://endpoints.office.com/version/{}?allversions=true&format=rss&clientrequestid={}".format(instance, uuid.uuid4())
     if verbose:
         print("Getting RSS Feed from: {}".format(rss_url))
         if len(proxies) > 0:
