@@ -57,3 +57,6 @@ The format is as follows:
 Call vManage.py to execute.
 main.py will call vManage.py every 86,400 seconds (24 hours) if you wish to have it run by itself.
 *This is not advised. Recommend using a cron job to schedule the script for recurring use.*
+
+## License
+[GNU GPL 3.0](LICENSE) License applies.
