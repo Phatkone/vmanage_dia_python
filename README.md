@@ -22,7 +22,7 @@ The format is as follows:
     "vmanage_user": "admin",
     "vmanage_password": "admin",
     # IP or FQDN and port for vManage API access - string and integer
-    "vmanage_address": "10.96.31.54",
+    "vmanage_address": "10.1.1.254",
     "vmanage_port": 443,
     # Data Prefix List to update. - string
     "vmanage_data_prefix_list": "O365_DIA",
