@@ -1,4 +1,4 @@
-# Cisco SD-WAN vManage Data Prefix List Dynamic Updater for Microsoft o365 Addresses
+# o365 Dynamic Updater for vManage Data Prefix List
 
 ## Purpose
 This tool dynamically updates a Data Prefix List in vManage with Microsoft o365 IPv4 addresses.
