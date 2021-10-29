@@ -12,7 +12,12 @@ def getSession(url: str, uid: str, pwd: str, verify: bool = True, verbose: bool 
     if verbose:
         print("Initialising Session")
         print("Logging in to https://{}/j_security_check".format(url))
-    r = s.post("https://{}/j_security_check".format(url),data={"j_username":uid,"j_password":pwd}, verify=verify)
+    try:
+        r = s.post("https://{}/j_security_check".format(url),data={"j_username":uid,"j_password":pwd}, verify=verify)
+    except requests.exceptions.ConnectionError as e:
+        print("Unable to establish session to vManage:\n{}".format(e))
+        exit()
+    
     if verbose:
         print("Response: {}".format(r.text))
         print("Retrieving client XSRF token")
