@@ -151,9 +151,10 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
 
 
 def main() -> None:
+    instance = config['instance']
     if verbose:
         print("Retrieving latest O365 list version")
-    o365_version = o365.getRSSVersion(proxies, verbose)
+    o365_version = o365.getRSSVersion(instance, proxies, verbose)
 
     if verbose:
         print("Version received: {}".format(o365_version))
@@ -197,7 +198,6 @@ def main() -> None:
     
     if verbose:
         print("Retrieving O365 IP Addresses")
-    instance = config['instance']
     optimized = bool(config['optimized'])
     tenant = config['tenant']
     service_area = config['service_area']
