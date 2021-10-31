@@ -3,6 +3,7 @@ import requests
 import json
 import xml.etree.ElementTree as ET
 from lib.ipReg import isIPv4, isIPv6
+from lib.cprint import cprint
 
 
 def getIPs(instance: str = "WorldWide", optimized: bool = False, tenant: str = '', service_area: str = '', proxies: dict = {}, verbose: bool = False, *args, **kwargs) -> tuple:
@@ -10,21 +11,21 @@ def getIPs(instance: str = "WorldWide", optimized: bool = False, tenant: str = '
     if tenant != '' and tenant is not None:
         url = "{}&TenantName={}".format(url, tenant)
         if verbose:
-            print("Setting TenantName: {}".format(tenant))
+            cprint("Setting TenantName: {}".format(tenant), "purple")
     if service_area != '' and service_area is not None:
         url = "{}&ServiceAreas={}".format(url, service_area)
         if verbose:
-            print("Setting ServiceArea: {}".format(service_area))
+            cprint("Setting ServiceArea: {}".format(service_area), "purple")
 
     if verbose:
-        print("Getting IP list from: {}".format(url))
+        cprint("Getting IP list from: {}".format(url), "purple")
         if len(proxies) > 0:
-            print("Proxies configured: {}".format(proxies))
+            cprint("Proxies configured: {}".format(proxies), "yellow")
     r = requests.get(url, proxies = proxies)
     ipv4 = []
     ipv6 = []
     if verbose:
-        print("Response: {}".format(r.text))
+        cprint("Response: {}".format(r.text), "green")
     if r.status_code == 200:
         js = r.json()
         for entry in js:
@@ -56,19 +57,19 @@ def getUrls(instance: str = "WorldWide", optimized: bool = False, tenant: str = 
     if tenant != '':
         url = "{}&TenantName={}".format(url, tenant)
         if verbose:
-            print("Setting TenantName")
+            cprint("Setting TenantName", "purple")
     if service_area != '' and service_area is not None:
         url = "{}&ServiceAreas={}".format(url, service_area)
         if verbose:
-            print("Setting ServiceArea: {}".format(service_area))
+            cprint("Setting ServiceArea: {}".format(service_area), "purple")
     if verbose:
-        print("Getting IP list from: {}".format(url))
+        cprint("Getting IP list from: {}".format(url), "purple")
         if len(proxies) > 0:
-            print("Proxies configured: {}".format(proxies))
+            cprint("Proxies configured: {}".format(proxies), "yellow")
     r = requests.get(url, proxies = proxies)
     urls = []
     if verbose:
-        print("Response: {}".format(r.text))
+        cprint("Response: {}".format(r.text), "purple")
     if r.status_code == 200:
         js = r.json()
         for entry in js:
@@ -90,23 +91,23 @@ def getUrls(instance: str = "WorldWide", optimized: bool = False, tenant: str = 
 def getRSSVersion(instance: str = "WorldWide", proxies: dict = {}, verbose: bool = False):
     rss_url = "https://endpoints.office.com/version/{}?allversions=true&format=rss&clientrequestid={}".format(instance, uuid.uuid4())
     if verbose:
-        print("Getting RSS Feed from: {}".format(rss_url))
+        cprint("Getting RSS Feed from: {}".format(rss_url), "purple")
         if len(proxies) > 0:
-            print("Proxies configured: {}".format(proxies))
+            cprint("Proxies configured: {}".format(proxies), "purple")
     r = requests.get(rss_url, proxies = proxies)
     if verbose:
-        print("Response: {}".format(r.text))
+        cprint("Response: {}".format(r.text), "green")
     if r.status_code != 200:
         return False
     try:
         xml = ET.fromstring(r.text)
         version = xml.find('channel').find('item').find('guid').text
         if verbose:
-            print("Retrieving GUID from RSS XML: {}".format(version))
+            cprint("Retrieving GUID from RSS XML: {}".format(version), "green")
     except ET.ParseError as e:
-        print("Error retrieving O365 Version:\n> {}".format(e))
+        cprint("Error retrieving O365 Version:\n> {}".format(e), "red")
         return False
     except AttributeError as e:
-        print("Error retrieving O365 Version:\n> {}".format(e))
+        cprint("Error retrieving O365 Version:\n> {}".format(e), "red")
         return False
     return version
