@@ -1,3 +1,11 @@
+"""
+Written by Craig B.
+https://github.com/Phatkone
+           ,,,
+          (. .)
+-------ooO-(_)-Ooo-------
+"""
+
 import requests
 import json
 import lib.o365 as o365

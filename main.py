@@ -1,3 +1,11 @@
+"""
+Written by Craig B.
+https://github.com/Phatkone
+           ,,,
+          (. .)
+-------ooO-(_)-Ooo-------
+"""
+
 import vmanage
 import time
 import sys

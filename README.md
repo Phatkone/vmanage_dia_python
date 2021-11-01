@@ -68,4 +68,9 @@ This script can run with --verbose or -v for verbose run and --dry or -d for a d
 [GNU GPL 3.0](LICENSE) License applies.
 
 ## Author
-Craig B. [Phatkone](https://github.com/Phatkone) 
+Craig B. [Phatkone](https://github.com/Phatkone)
+```
+           ,,,
+          (. .)
+-------ooO-(_)-Ooo-------
+```

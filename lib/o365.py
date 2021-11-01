@@ -1,6 +1,13 @@
+"""
+Written by Craig B.
+https://github.com/Phatkone
+           ,,,
+          (. .)
+-------ooO-(_)-Ooo-------
+"""
+
 import uuid
 import requests
-import json
 import xml.etree.ElementTree as ET
 from lib.ipReg import isIPv4, isIPv6
 from lib.cprint import cprint

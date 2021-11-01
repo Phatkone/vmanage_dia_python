@@ -1,3 +1,11 @@
+"""
+Written by Craig B.
+https://github.com/Phatkone
+           ,,,
+          (. .)
+-------ooO-(_)-Ooo-------
+"""
+
 def cprint(string: str, type: str = "endc", bold: bool = False, underline: bool = False) -> None:
     colours = {
         'PURPLE': '\033[95m',

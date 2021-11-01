@@ -1,3 +1,11 @@
+"""
+Written by Craig B.
+https://github.com/Phatkone
+           ,,,
+          (. .)
+-------ooO-(_)-Ooo-------
+"""
+
 import json
 configFile = 'dia-config.json'
 

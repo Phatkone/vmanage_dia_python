@@ -1,3 +1,11 @@
+"""
+Written by Craig B.
+https://github.com/Phatkone
+           ,,,
+          (. .)
+-------ooO-(_)-Ooo-------
+"""
+
 import dns.name
 import dns.message
 import dns.query
