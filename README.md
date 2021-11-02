@@ -14,10 +14,8 @@ The following pip packages are required for operation:
  - json
 
 ## Configuration File
-All configuration is in the dia-config.json file.
-
-The script will generate any missing properties.
-
+All configuration is in the dia-config.json file.  
+The script will generate any missing properties.  
 The format is as follows:
 ```
 {
@@ -60,11 +58,11 @@ The format is as follows:
 ```
 
 ## Usage
-Call vManage.py to execute.
-main.py will call vManage.py every 86,400 seconds (24 hours) if you wish to have it run by itself.
-*This is not advised. Recommend using a cron job to schedule the script for recurring use.*
-
-This script can run with --verbose or -v for verbose run and --dry or -d for a dry run.
+Call vManage.py to execute.  
+main.py will call vManage.py every 86,400 seconds (24 hours) if you wish to have it run by itself.  
+*This is not advised. Recommend using a cron job to schedule the script for recurring use.*  
+  
+This script can run with --verbose or -v for verbose run and --dry or -d for a dry run.  
 
 ## License
 [GNU GPL 3.0](LICENSE) License applies.
