@@ -3,7 +3,7 @@
 ## Purpose
 This tool dynamically updates a Data Prefix List in vManage with Microsoft o365 IPv4 addresses.
 Additional direct internet addresses and subnets can be added through the configuration file as IPv4 addresses or FQDNs (no wildcards).
-The o365 list can be manipulated to only populate the optimize tagged addresses or even specific tenancies.
+  The o365 list can be manipulated to only populate the optimize tagged addresses or even specific tenancies.
 Note. Any existing entries in the data prefix list will be removed when the script runs, include these in the user defined entries within the configuration file.
 
 ## Requirements
