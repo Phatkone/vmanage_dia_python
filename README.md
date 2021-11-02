@@ -2,12 +2,16 @@
 
 ## Purpose
 This tool dynamically updates a Data Prefix List in vManage with Microsoft o365 IPv4 addresses.
+
 Additional direct internet addresses and subnets can be added through the configuration file as IPv4 addresses or FQDNs (no wildcards).
+
 The o365 list can be manipulated to only populate the optimize tagged addresses or even specific tenancies.
+
 Note. Any existing entries in the data prefix list will be removed when the script runs, include these in the user defined entries within the configuration file.
 
 ## Requirements
 This script has been built for python3. No testing has been performed on python2 and as such is not supported.
+
 The following pip packages are required for operation:
  - requests
  - dnspythong
@@ -15,7 +19,9 @@ The following pip packages are required for operation:
 
 ## Configuration File
 All configuration is in the dia-config.json file.
+
 The script will generate any missing properties.
+
 The format is as follows:
 ```
 {
