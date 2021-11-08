@@ -10,7 +10,7 @@ Note. Any existing entries in the data prefix list will be removed when the scri
 This script has been built for python3. No testing has been performed on python2 and as such is not supported.  
 The following pip packages are required for operation:
  - requests
- - dnspythong
+ - dnspython
  - json
 
 ## Configuration File
