@@ -136,10 +136,10 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
                 cprint("Successfully loaded new data prefix list entries", "green")
                 cprint("Response: {}".format(json.dumps(r.json(), indent=2)), "green")
                 cprint("Master Templates: {}".format(json.dumps(master_templates, indent=2)), "purple")
-            success = True
-            continue
+            break
     return master_templates
-
+        
+            
 def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id: str, master_templates: list, verify: bool, headers: dict, retries: int, timeout: int, verbose: bool = False, dry: bool = False, *args, **kwargs) -> str:
     attempts = 1
     success = False
