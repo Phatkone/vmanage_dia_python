@@ -101,6 +101,10 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
 
     success = False
     attempts = 1
+<<<<<<< HEAD
+=======
+    master_templates = []
+>>>>>>> daad18d (Fixed commitment rollback issue)
 
     if verbose or dry:
         cprint("New Data Prefix List: {}".format(json.dumps(data, indent=2)), "green")
@@ -129,6 +133,7 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
                 cprint("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries), "yellow")
             attempts += 1
             time.sleep(timeout)
+<<<<<<< HEAD
         else:
             if verbose:
                 cprint("Successfully loaded new data prefix list entries", "green")
@@ -143,6 +148,103 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
     js = r.json()
     pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
     return pol_id
+=======
+        else:            
+            master_templates = r.json()['masterTemplatesAffected']
+            if verbose:
+                cprint("Successfully loaded new data prefix list entries", "green")
+                cprint("Response: {}".format(json.dumps(r.json(), indent=2)), "green")
+                cprint("Master Templates: {}".format(json.dumps(master_templates, indent=2)), "purple")
+            success = True
+            continue
+    return master_templates
+
+def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id: str, master_templates: list, verify: bool, headers: dict, retries: int, timeout: int, verbose: bool = False, dry: bool = False, *args, **kwargs) -> str:
+    attempts = 1
+    success = False
+    while attempts <= retries and success == False:
+        try:
+            attach_post = {
+                'deviceTemplateList': []
+            }
+
+            for template in master_templates:
+                input_post = {
+                    'deviceIds': [],
+                    'isEdited': True,
+                    'isMasterEdited': False,
+                    'templateId': template
+                }
+                attach_post_template = {
+                    'templateId' : template,
+                    'device': [],
+                    'isEdited': True,
+                    'isMasterEdited': False
+                }
+                r = s.get("https://{}:{}/dataservice/template/device/config/attached/{}".format(url, port, template), headers=headers, verify=verify)
+                for entry in r.json()['data']:
+                    input_post['deviceIds'].append(entry['uuid'])
+                
+                r = s.post("https://{}:{}/dataservice/template/device/config/input/".format(url,port),headers=headers, verify=verify, data=json.dumps(input_post))
+                for entry in r.json()['data']:
+                    entry['csv-templateId'] = template
+                    attach_post_template['device'].append(entry)
+                attach_post['deviceTemplateList'].append(attach_post_template)
+
+            if verbose:
+                cprint("Attach feature data: {}".format(json.dumps(attach_post, indent=2)), "yellow")
+
+            r = s.post("https://{}:{}/dataservice/template/device/config/attachfeature".format(url,port), headers=headers, verify=verify, data=json.dumps(attach_post)) 
+            attach_id = r.json()['id']
+            success = True
+        except Exception as e:
+            cprint("Exception: {} Waiting {} seconds to try again".format(e,timeout), "red")
+            attempts = attempts+1
+            cprint("Attempt number: {}".format(attempts),"red")
+            time.sleep(timeout)
+    
+    if success == False:
+        cprint("Exceeded attempts {} of {}".format(attempts, retries), "red")
+        exit(-1)
+
+    attempts = 1
+    status = "in_progress"
+    while attempts <= retries and status == "in_progress":
+        try :
+            devices_left = 0
+            r = s.get("https://{}:{}/dataservice/device/action/status/{}".format(url,port, attach_id)).json()
+            status = r['summary']['status']
+
+            for data in r['data']:
+                if data['statusId'] == 'in_progress':
+                    devices_left = devices_left + 1
+                
+            if verbose or dry:
+                if status == 'in_progress':
+                    cprint("Template activate still in progress, status is: {}".format(status),"yellow")
+                    cprint("Number of devices still being provisioned is: {}".format(devices_left),"yellow")
+            
+                if status == "done":
+                    cprint("Template activate complete, status is: {}".format(status),"green")
+
+                cprint("Response: {}".format(r.text), "yellow")
+            
+            if verbose or dry:
+                cprint("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), "purple")
+            r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
+            if verbose:
+                cprint("Response: {}".format(r.text), "yellow")
+            js = r.json()
+            pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
+            return pol_id
+        except Exception as e:
+            cprint("Exception: {} Waiting {} seconds to try again".format(e, timeout), "red")
+            attempts = attempts+1
+            cprint("Attempt number: {}".format(attempts),"red")
+            time.sleep(timeout)
+    cprint("Exceeded attempts {} of {}".format(attempts, retries), "red")
+    exit(-1)
+>>>>>>> daad18d (Fixed commitment rollback issue)
 
 
 def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: bool, headers: dict, pol_id: str, retries: int, timeout: int, verbose: bool = False, dry: bool = False, *args, **kwargs) -> None:
@@ -154,7 +256,11 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
         if dry:
             success = True
             return
+<<<<<<< HEAD
         r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id), headers=headers, data="{}",verify=verify)
+=======
+        r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}?confirm=true".format(url, port, pol_id), headers=headers, data="{}",verify=verify)
+>>>>>>> daad18d (Fixed commitment rollback issue)
         if verbose:
             cprint("Response: {}".format(r.text))
         if r.status_code == 200:
@@ -239,7 +345,11 @@ def main() -> None:
     if verbose:
         cprint("Updating data prefix list", "purple")
     
+<<<<<<< HEAD
     pol_id = updateDataPrefixList(s, 
+=======
+    master_templates = updateDataPrefixList(s, 
+>>>>>>> daad18d (Fixed commitment rollback issue)
         config["vmanage_address"], 
         config["vmanage_port"], 
         data_prefix_list, 
@@ -254,12 +364,36 @@ def main() -> None:
         verbose,
         dry
     )
+<<<<<<< HEAD
+=======
+
+    if verbose:
+        cprint(master_templates)
+
+    pol_id = activateTemplates(s, 
+        config["vmanage_address"], 
+        config["vmanage_port"], 
+        data_prefix_list,
+        master_templates,
+        config["ssl_verify"], 
+        headers,
+        config["retries"], 
+        config["timeout"], 
+        verbose,
+        dry
+    )
+
+>>>>>>> daad18d (Fixed commitment rollback issue)
     if verbose:
         cprint(pol_id)
 
     if len(pol_id) < 1:
         cprint("Referenced Policies not found", "red")
+<<<<<<< HEAD
         exit()
+=======
+        exit(-1)
+>>>>>>> daad18d (Fixed commitment rollback issue)
 
     if verbose or dry:
         cprint("Activating Policies", "purple")
