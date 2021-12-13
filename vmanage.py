@@ -101,10 +101,7 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
 
     success = False
     attempts = 1
-<<<<<<< HEAD
-=======
     master_templates = []
->>>>>>> daad18d (Fixed commitment rollback issue)
 
     if verbose or dry:
         cprint("New Data Prefix List: {}".format(json.dumps(data, indent=2)), "green")
@@ -133,22 +130,6 @@ def updateDataPrefixList(s: requests.sessions.Session, url: str, port: int, list
                 cprint("Trying again in {} seconds, attempt {} of {}".format(timeout, attempts, retries), "yellow")
             attempts += 1
             time.sleep(timeout)
-<<<<<<< HEAD
-        else:
-            if verbose:
-                cprint("Successfully loaded new data prefix list entries", "green")
-            success = True
-            continue
-
-    if verbose or dry:
-        cprint("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), "purple")
-    r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
-    if verbose:
-        cprint("Response: {}".format(r.text), "yellow")
-    js = r.json()
-    pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
-    return pol_id
-=======
         else:            
             master_templates = r.json()['masterTemplatesAffected']
             if verbose:
@@ -244,7 +225,6 @@ def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id
             time.sleep(timeout)
     cprint("Exceeded attempts {} of {}".format(attempts, retries), "red")
     exit(-1)
->>>>>>> daad18d (Fixed commitment rollback issue)
 
 
 def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: bool, headers: dict, pol_id: str, retries: int, timeout: int, verbose: bool = False, dry: bool = False, *args, **kwargs) -> None:
@@ -256,11 +236,7 @@ def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: 
         if dry:
             success = True
             return
-<<<<<<< HEAD
-        r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}".format(url, port, pol_id), headers=headers, data="{}",verify=verify)
-=======
         r = s.post("https://{}:{}/dataservice/template/policy/vsmart/activate/{}?confirm=true".format(url, port, pol_id), headers=headers, data="{}",verify=verify)
->>>>>>> daad18d (Fixed commitment rollback issue)
         if verbose:
             cprint("Response: {}".format(r.text))
         if r.status_code == 200:
@@ -345,11 +321,7 @@ def main() -> None:
     if verbose:
         cprint("Updating data prefix list", "purple")
     
-<<<<<<< HEAD
-    pol_id = updateDataPrefixList(s, 
-=======
     master_templates = updateDataPrefixList(s, 
->>>>>>> daad18d (Fixed commitment rollback issue)
         config["vmanage_address"], 
         config["vmanage_port"], 
         data_prefix_list, 
@@ -364,8 +336,6 @@ def main() -> None:
         verbose,
         dry
     )
-<<<<<<< HEAD
-=======
 
     if verbose:
         cprint(master_templates)
@@ -383,17 +353,12 @@ def main() -> None:
         dry
     )
 
->>>>>>> daad18d (Fixed commitment rollback issue)
     if verbose:
         cprint(pol_id)
 
     if len(pol_id) < 1:
         cprint("Referenced Policies not found", "red")
-<<<<<<< HEAD
         exit()
-=======
-        exit(-1)
->>>>>>> daad18d (Fixed commitment rollback issue)
 
     if verbose or dry:
         cprint("Activating Policies", "purple")
