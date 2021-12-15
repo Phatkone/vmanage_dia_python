@@ -167,6 +167,9 @@ def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id
                 for entry in r.json()['data']:
                     input_post['deviceIds'].append(entry['uuid'])
                 
+                if verbose or dry:
+                    cprint("Device ID: {}".format(json.dumps(input_post['deviceIds'], indent=2)), "purple")
+
                 r = s.post("https://{}:{}/dataservice/template/device/config/input/".format(url,port),headers=headers, verify=verify, data=json.dumps(input_post))
                 for entry in r.json()['data']:
                     entry['csv-templateId'] = template
@@ -175,6 +178,10 @@ def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id
 
             if verbose:
                 cprint("Attach feature data: {}".format(json.dumps(attach_post, indent=2)), "yellow")
+
+            if dry:
+                success = True
+                break
 
             r = s.post("https://{}:{}/dataservice/template/device/config/attachfeature".format(url,port), headers=headers, verify=verify, data=json.dumps(attach_post)) 
             attach_id = r.json()['id']
@@ -191,7 +198,7 @@ def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id
 
     attempts = 1
     status = "in_progress"
-    while attempts <= retries and status == "in_progress":
+    while attempts <= retries and status == "in_progress" and not dry:
         try :
             devices_left = 0
             r = s.get("https://{}:{}/dataservice/device/action/status/{}".format(url,port, attach_id)).json()
@@ -201,7 +208,7 @@ def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id
                 if data['statusId'] == 'in_progress':
                     devices_left = devices_left + 1
                 
-            if verbose or dry:
+            if verbose:
                 if status == 'in_progress':
                     cprint("Template activate still in progress, status is: {}".format(status),"yellow")
                     cprint("Number of devices still being provisioned is: {}".format(devices_left),"yellow")
@@ -211,21 +218,25 @@ def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id
 
                 cprint("Response: {}".format(r.text), "yellow")
             
-            if verbose or dry:
-                cprint("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), "purple")
-            r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
-            if verbose:
-                cprint("Response: {}".format(r.text), "yellow")
-            js = r.json()
-            pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
-            return pol_id
         except Exception as e:
             cprint("Exception: {} Waiting {} seconds to try again".format(e, timeout), "red")
             attempts = attempts+1
             cprint("Attempt number: {}".format(attempts),"red")
             time.sleep(timeout)
-    cprint("Exceeded attempts {} of {}".format(attempts, retries), "red")
-    exit(-1)
+
+    if status == "in_progress": 
+        cprint("Exceeded attempts {} of {}".format(attempts, retries), "red")
+        exit(-1)
+    
+    if verbose or dry:
+        cprint("Fetching activated ID from: https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), "purple")
+    r = s.get("https://{}:{}/dataservice/template/policy/list/dataprefix/{}".format(url, port, list_id), headers=headers, verify=verify)
+    if verbose:
+        cprint("Response: {}".format(r.text), "yellow")
+    js = r.json()
+    pol_id = js["activatedId"] if 'activatedId' in js.keys() else ""
+    return pol_id
+
 
 
 def activatePolicies(s: requests.sessions.Session, url: str, port: int, verify: bool, headers: dict, pol_id: str, retries: int, timeout: int, verbose: bool = False, dry: bool = False, *args, **kwargs) -> None:
