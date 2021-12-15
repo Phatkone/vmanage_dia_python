@@ -217,7 +217,11 @@ def activateTemplates(s: requests.sessions.Session, url: str, port: int, list_id
                     cprint("Template activate complete, status is: {}".format(status),"green")
 
                 cprint("Response: {}".format(r.text), "yellow")
+            if status == "done":
+                break
             
+            cprint("{} Waiting {} seconds to try again".format(e, timeout), "red")
+
         except Exception as e:
             cprint("Exception: {} Waiting {} seconds to try again".format(e, timeout), "red")
             attempts = attempts+1
