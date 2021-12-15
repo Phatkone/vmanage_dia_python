@@ -328,10 +328,10 @@ def main() -> None:
     )
     if type(ipv4) == bool:
         #if ipv4 is type bool then getIPs returned false, ipv6 is the error message
-        cprint(ipv6)
+        cprint(ipv6, "red")
         exit(-1)
     if verbose:
-        cprint(ipv4)
+        cprint(ipv4, "yellow")
 
 
     if verbose:
@@ -354,7 +354,7 @@ def main() -> None:
     )
 
     if verbose:
-        cprint(master_templates)
+        cprint(master_templates, "yellow")
 
     pol_id = activateTemplates(s, 
         config["vmanage_address"], 
